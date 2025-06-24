@@ -2,12 +2,12 @@
 
 The following features and tasks from the project requirements are not yet implemented:
 
-- Procedural puzzle generation and piece layouts for replayability.
+- ~~Procedural puzzle generation and piece layouts for replayability.~~ Implemented basic random layout generation on the server.
 - Physics simulation for puzzle pieces including collision, movement and win-state detection.
 - Database to persist player sessions, puzzle states and progress.
-- Variety of interactive puzzle elements like ramps, fans or levers.
-- Real puzzle completion logic that unlocks the next puzzle upon success.
-- True perspective switching between top-down and side view beyond a simple color change.
+- ~~Variety of interactive puzzle elements like ramps, fans or levers.~~ Added ramp pieces.
+- ~~Real puzzle completion logic that unlocks the next puzzle upon success.~~ Server now generates a new puzzle when players place a piece on the goal.
+- ~~True perspective switching between top-down and side view beyond a simple color change.~~ Client renders blocks and ramps differently in side view.
 - Visual assets and animations that meet the 60 fps and modern style guidelines.
 - Scaling difficulty and puzzle balancing.
 - Automated tests covering physics, multiplayer synchronization and UI behavior.

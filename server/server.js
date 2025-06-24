@@ -9,10 +9,35 @@ const httpServer = createServer(app);
 const wss = new WebSocketServer({ server: httpServer });
 const PORT = process.env.PORT || 3000;
 
-// In-memory storage for connected players and puzzle pieces
+// In-memory storage for connected players
 const emojiList = ['😀', '😎', '😂', '🤖', '🦄', '🐱', '🐶', '🐸', '🐵', '🐼', '🐧', '🐰'];
 const players = new Map();
-const puzzlePieces = [];
+// Current puzzle state managed on the server
+let puzzleState = generatePuzzle();
+
+function generatePuzzle() {
+  const pieces = [];
+  for (let i = 0; i < 5; i++) {
+    pieces.push({
+      id: crypto.randomUUID(),
+      type: 'block',
+      x: Math.random() * 760 + 20,
+      y: Math.random() * 560 + 20,
+      static: true
+    });
+  }
+  const target = {
+    x: Math.random() * 760 + 20,
+    y: Math.random() * 560 + 20
+  };
+  return { pieces, target };
+}
+
+function checkPuzzleComplete(piece) {
+  const dx = piece.x - puzzleState.target.x;
+  const dy = piece.y - puzzleState.target.y;
+  return Math.sqrt(dx * dx + dy * dy) < 20;
+}
 
 function emojiForIP(ip) {
   // Simple hash to map an IP to one of the emojis
@@ -39,7 +64,12 @@ wss.on('connection', (ws, req) => {
   players.set(ws, { ip, emoji });
 
   // Send existing puzzle state and assigned emoji to the new player
-  ws.send(JSON.stringify({ type: 'welcome', emoji, pieces: puzzlePieces }));
+  ws.send(JSON.stringify({
+    type: 'welcome',
+    emoji,
+    pieces: puzzleState.pieces,
+    target: puzzleState.target
+  }));
 
   // Notify others a player joined
   broadcast({ type: 'playerJoined', emoji });
@@ -54,8 +84,13 @@ wss.on('connection', (ws, req) => {
 
     // Update puzzle state and broadcast actions
     if (data.type === 'addPiece') {
-      puzzlePieces.push(data.piece);
+      puzzleState.pieces.push(data.piece);
       broadcast({ type: 'addPiece', piece: data.piece });
+      if (checkPuzzleComplete(data.piece)) {
+        broadcast({ type: 'puzzleComplete', emoji });
+        puzzleState = generatePuzzle();
+        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      }
     }
   });
 
