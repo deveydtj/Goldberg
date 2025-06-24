@@ -20,7 +20,7 @@ function loadDB() {
   try {
     return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
   } catch (e) {
-    return { sessions: {}, puzzleState: null, difficulty: 1 };
+    return { sessions: {}, puzzleState: null, difficulty: 1, progress: {} };
   }
 }
 
@@ -112,6 +112,10 @@ function broadcast(obj) {
   });
 }
 
+function broadcastLeaderboard() {
+  broadcast({ type: 'leaderboard', leaderboard: db.progress || {} });
+}
+
 wss.on('connection', (ws, req) => {
   const ip = req.socket.remoteAddress || '0.0.0.0';
   let emoji = db.sessions[ip];
@@ -128,7 +132,8 @@ wss.on('connection', (ws, req) => {
     type: 'welcome',
     emoji,
     pieces: puzzleState.pieces,
-    target: puzzleState.target
+    target: puzzleState.target,
+    leaderboard: db.progress || {}
   }));
 
   // Notify others a player joined
@@ -154,6 +159,7 @@ wss.on('connection', (ws, req) => {
         db.progress[ip] = (db.progress[ip] || 0) + 1;
         puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
         saveDB(db);
+        broadcastLeaderboard();
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
       } else {
         db.puzzleState = puzzleState;
@@ -172,11 +178,16 @@ wss.on('connection', (ws, req) => {
         db.progress[ip] = (db.progress[ip] || 0) + 1;
         puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
         saveDB(db);
+        broadcastLeaderboard();
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
       }
+    } else if (data.type === 'chat') {
+      broadcast({ type: 'chat', emoji, text: data.text });
+    } else if (data.type === 'cursor') {
+      broadcast({ type: 'cursor', emoji, x: data.x, y: data.y });
     }
   });
 

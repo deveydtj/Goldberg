@@ -16,3 +16,9 @@ s each time a puzzle is solved.
 - ~~Automated tests covering physics, multiplayer synchronization and UI behavio
 r.~~ Added tests for WebSocket welcome and UI toggling.
 
+# New feature ideas
+- ~~Implement an in-game chat system so players can coordinate solutions via WebSockets.~~ Added chatLog and server relay.
+- ~~Show each player's emoji cursor on the canvas to visualize everyone's actions.~~ Mouse movements broadcast and rendered.
+- Allow players to move or delete pieces they've placed for better collaboration.
+- ~~Track puzzle completion counts in a persistent leaderboard displayed on the client.~~ Leaderboard now sent on welcome and puzzle completion.
+- ~~Add a spring piece that launches the ball upward when triggered.~~ Added Spring piece with physics and drawing.

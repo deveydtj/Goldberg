@@ -30,3 +30,10 @@ test('ball bounces off a ramp', () => {
   }
   assert.ok(ball.vy <= 0);
 });
+
+test('spring pushes ball upward', () => {
+  const spring = { id: 's1', type: 'spring', x: 60, y: 60, power: 8 };
+  const ball = { id: 'ball', type: 'ball', x: 60, y: 59, vx: 0, vy: 1, radius: 5 };
+  updateBall(ball, [spring], 1);
+  assert.ok(ball.vy < 0);
+});

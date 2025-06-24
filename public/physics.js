@@ -79,6 +79,16 @@ function fanEffect(ball, fan) {
     }
 }
 
+function springEffect(ball, spring) {
+    const dx = ball.x - spring.x;
+    const dy = ball.y - spring.y;
+    const distSq = dx * dx + dy * dy;
+    const radius = 12;
+    if (distSq < Math.pow(ball.radius + radius, 2) && ball.vy > -spring.power) {
+        ball.vy = -spring.power;
+    }
+}
+
 export function updateBall(ball, pieces, dt = 1) {
     ball.vy += GRAVITY * dt;
     ball.x += ball.vx * dt;
@@ -97,6 +107,8 @@ export function updateBall(ball, pieces, dt = 1) {
             rampCollision(ball, p);
         } else if (p.type === 'fan') {
             fanEffect(ball, p);
+        } else if (p.type === 'spring') {
+            springEffect(ball, p);
         }
     }
 
