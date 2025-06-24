@@ -3,10 +3,8 @@ import assert from 'node:assert/strict';
 import { toggleView, sideView } from '../public/ui.js';
 
 
-test('toggleView switches between views', () => {
-  const first = toggleView();
-  assert.equal(sideView, first);
-  const second = toggleView();
-  assert.equal(sideView, second);
-  assert.notEqual(first, second);
+test('side view remains enabled', () => {
+  assert.equal(sideView, true);
+  toggleView();
+  assert.equal(sideView, true);
 });

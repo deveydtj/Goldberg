@@ -1,4 +1,4 @@
-import { Block, Ramp, Ball, Fan, Spring, sideView, toggleView, pieceAlpha } from './ui.js';
+import { Block, Ramp, Ball, Fan, Spring, pieceAlpha } from './ui.js';
 import { updateBall } from './physics.js';
 
 // WebSocket connection to the server
@@ -180,9 +180,7 @@ canvas.addEventListener('dblclick', (e) => {
 
 
 window.addEventListener('keydown', (e) => {
-    if (e.key === 'v') {
-        toggleView();
-    } else if (e.key === 'r') {
+    if (e.key === 'r') {
         socket.send(JSON.stringify({ type: 'resetPuzzle' }));
     }
 });
@@ -190,42 +188,26 @@ window.addEventListener('keydown', (e) => {
 function drawBlock(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.fillStyle = sideView ? '#4aa' : '#333';
-    if (sideView) {
-        ctx.fillRect(p.x - 10, p.y - 20, 20, 20);
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.fillRect(p.x - 10, p.y, 20, 5);
-    } else {
-        ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
-    }
+    ctx.fillStyle = '#4aa';
+    ctx.fillRect(p.x - 10, p.y - 20, 20, 20);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(p.x - 10, p.y, 20, 5);
     ctx.restore();
 }
 
 function drawRamp(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.fillStyle = sideView ? '#aa4' : '#555';
+    ctx.fillStyle = '#aa4';
     ctx.beginPath();
-    if (sideView) {
-        if (p.direction === 'right') {
-            ctx.moveTo(p.x - 10, p.y);
-            ctx.lineTo(p.x + 10, p.y);
-            ctx.lineTo(p.x + 10, p.y - 20);
-        } else {
-            ctx.moveTo(p.x + 10, p.y);
-            ctx.lineTo(p.x - 10, p.y);
-            ctx.lineTo(p.x - 10, p.y - 20);
-        }
+    if (p.direction === 'right') {
+        ctx.moveTo(p.x - 10, p.y);
+        ctx.lineTo(p.x + 10, p.y);
+        ctx.lineTo(p.x + 10, p.y - 20);
     } else {
-        if (p.direction === 'right') {
-            ctx.moveTo(p.x - 10, p.y + 10);
-            ctx.lineTo(p.x + 10, p.y + 10);
-            ctx.lineTo(p.x - 10, p.y - 10);
-        } else {
-            ctx.moveTo(p.x + 10, p.y + 10);
-            ctx.lineTo(p.x - 10, p.y + 10);
-            ctx.lineTo(p.x + 10, p.y - 10);
-        }
+        ctx.moveTo(p.x + 10, p.y);
+        ctx.lineTo(p.x - 10, p.y);
+        ctx.lineTo(p.x - 10, p.y - 20);
     }
     ctx.closePath();
     ctx.fill();
