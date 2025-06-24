@@ -150,6 +150,7 @@ wss.on('connection', (ws, req) => {
     // Update puzzle state and broadcast actions
     if (data.type === 'addPiece') {
       data.piece.spawnTime = Date.now();
+      data.piece.owner = emoji;
       puzzleState.pieces.push(data.piece);
       broadcast({ type: 'addPiece', piece: data.piece });
       if (checkPuzzleComplete(data.piece)) {
@@ -181,6 +182,23 @@ wss.on('connection', (ws, req) => {
         broadcastLeaderboard();
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
       } else {
+        db.puzzleState = puzzleState;
+        saveDB(db);
+      }
+    } else if (data.type === 'movePiece') {
+      const piece = puzzleState.pieces.find(p => p.id === data.id);
+      if (piece && piece.owner === emoji) {
+        piece.x = data.x;
+        piece.y = data.y;
+        broadcast({ type: 'movePiece', id: piece.id, x: piece.x, y: piece.y });
+        db.puzzleState = puzzleState;
+        saveDB(db);
+      }
+    } else if (data.type === 'removePiece') {
+      const index = puzzleState.pieces.findIndex(p => p.id === data.id);
+      if (index !== -1 && puzzleState.pieces[index].owner === emoji) {
+        puzzleState.pieces.splice(index, 1);
+        broadcast({ type: 'removePiece', id: data.id });
         db.puzzleState = puzzleState;
         saveDB(db);
       }
