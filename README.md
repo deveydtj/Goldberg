@@ -5,7 +5,7 @@ Emoji Goldberg Puzzle is a multiplayer collaborative puzzle game inspired by Rub
 ## Gameplay Overview
 - **Collaborative solving** – everyone on the server shares the same puzzle. Players place or adjust pieces simultaneously to achieve a solution.
 - **Emoji identification** – each player is represented by a unique emoji tied to their IP address. This creates a playful, intuitive way to see who is acting in the puzzle.
-- **Physics-based pieces** – ramps, springs, fans, levers, conveyors and more interact using realistic 2D physics.
+- **Physics-based pieces** – blocks and ramps respond to gravity and collisions, with ramps bouncing the ball along their slopes. Basic fans push the ball upward, and future pieces like springs will expand the variety.
 - **Perspective switching** – seamlessly toggle between top‑down and side views to place components precisely.
 
 ## Core Features

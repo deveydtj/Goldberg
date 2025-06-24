@@ -1,4 +1,4 @@
-import { Block, Ramp, Ball, sideView, toggleView, pieceAlpha } from './ui.js';
+import { Block, Ramp, Ball, Fan, sideView, toggleView, pieceAlpha } from './ui.js';
 import { updateBall } from './physics.js';
 
 // WebSocket connection to the server
@@ -70,6 +70,16 @@ canvas.addEventListener('contextmenu', (e) => {
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
 });
 
+canvas.addEventListener('auxclick', (e) => {
+    if (e.button !== 1) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const piece = new Fan(Date.now(), x, y, 1);
+    pieces.push(piece);
+    socket.send(JSON.stringify({ type: 'addPiece', piece }));
+});
+
 window.addEventListener('keydown', (e) => {
     if (e.key === 'v') {
         toggleView();
@@ -121,6 +131,20 @@ function drawRamp(p) {
     ctx.restore();
 }
 
+function drawFan(p) {
+    ctx.save();
+    ctx.globalAlpha = pieceAlpha(p);
+    ctx.fillStyle = '#88c';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x, p.y - 15);
+    ctx.strokeStyle = '#88c';
+    ctx.stroke();
+    ctx.fill();
+    ctx.restore();
+}
+
 function drawTarget() {
     if (!target) return;
     ctx.fillStyle = '#e33';
@@ -135,6 +159,8 @@ function drawPieces() {
             drawBlock(p);
         } else if (p.type === 'ramp') {
             drawRamp(p);
+        } else if (p.type === 'fan') {
+            drawFan(p);
         }
     });
 }
