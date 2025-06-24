@@ -11,6 +11,8 @@ const chatInput = document.getElementById('chatInput');
 const leaderboardEl = document.getElementById('leaderboard');
 
 const otherCursors = new Map();
+let draggingPiece = null;
+let dragOffset = { x: 0, y: 0 };
 
 chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && chatInput.value.trim() !== '') {
@@ -23,6 +25,13 @@ let myEmoji = '❓';
 let pieces = [];
 let target = null;
 let ball = null;
+
+function pieceAt(x, y) {
+    return pieces.find(p => {
+        if (p.type === 'ball') return false;
+        return Math.abs(p.x - x) <= 10 && Math.abs(p.y - y) <= 10;
+    });
+}
 
 socket.addEventListener('open', () => {
     console.log('Connected to server');
@@ -45,6 +54,14 @@ socket.addEventListener('message', event => {
             break;
         case 'addPiece':
             pieces.push(msg.piece);
+            break;
+        case 'movePiece': {
+            const p = pieces.find(p => p.id === msg.id);
+            if (p) { p.x = msg.x; p.y = msg.y; }
+            break;
+        }
+        case 'removePiece':
+            pieces = pieces.filter(p => p.id !== msg.id);
             break;
         case 'ballUpdate':
             if (ball && msg.ball.id === ball.id) {
@@ -88,20 +105,40 @@ socket.addEventListener('message', event => {
     }
 });
 
-canvas.addEventListener('click', (e) => {
+canvas.addEventListener('mousedown', (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
-    pieces.push(piece);
-    socket.send(JSON.stringify({ type: 'addPiece', piece }));
+    if (e.button === 0) {
+        const targetPiece = pieceAt(x, y);
+        if (targetPiece && targetPiece.owner === myEmoji) {
+            draggingPiece = targetPiece;
+            dragOffset.x = x - targetPiece.x;
+            dragOffset.y = y - targetPiece.y;
+            return;
+        }
+        const piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
+        piece.owner = myEmoji;
+        pieces.push(piece);
+        socket.send(JSON.stringify({ type: 'addPiece', piece }));
+    }
 });
 
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    socket.send(JSON.stringify({ type: 'cursor', x, y }));
+    if (draggingPiece) {
+        draggingPiece.x = x - dragOffset.x;
+        draggingPiece.y = y - dragOffset.y;
+        socket.send(JSON.stringify({ type: 'movePiece', id: draggingPiece.id, x: draggingPiece.x, y: draggingPiece.y }));
+    } else {
+        socket.send(JSON.stringify({ type: 'cursor', x, y }));
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    draggingPiece = null;
 });
 
 canvas.addEventListener('contextmenu', (e) => {
@@ -111,6 +148,7 @@ canvas.addEventListener('contextmenu', (e) => {
     const y = e.clientY - rect.top;
     const direction = Math.random() < 0.5 ? 'left' : 'right';
     const piece = new Ramp(Date.now(), x, y, direction);
+    piece.owner = myEmoji;
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
 });
@@ -121,8 +159,20 @@ canvas.addEventListener('auxclick', (e) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const piece = new Fan(Date.now(), x, y, 1);
+    piece.owner = myEmoji;
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
+});
+
+canvas.addEventListener('dblclick', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const p = pieceAt(x, y);
+    if (p && p.owner === myEmoji) {
+        pieces = pieces.filter(q => q.id !== p.id);
+        socket.send(JSON.stringify({ type: 'removePiece', id: p.id }));
+    }
 });
 
 
