@@ -196,3 +196,4 @@ cython_debug/
 node_modules/
 .env
 package-lock.json
+server/data.json

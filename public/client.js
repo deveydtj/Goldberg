@@ -1,4 +1,4 @@
-import { Block, Ramp, Ball } from './pieces.js';
+import { Block, Ramp, Ball, sideView, toggleView, pieceAlpha } from './ui.js';
 import { updateBall } from './physics.js';
 
 // WebSocket connection to the server
@@ -11,7 +11,6 @@ let myEmoji = '❓';
 let pieces = [];
 let target = null;
 let ball = null;
-let sideView = false;
 
 socket.addEventListener('open', () => {
     console.log('Connected to server');
@@ -73,11 +72,13 @@ canvas.addEventListener('contextmenu', (e) => {
 
 window.addEventListener('keydown', (e) => {
     if (e.key === 'v') {
-        sideView = !sideView;
+        toggleView();
     }
 });
 
 function drawBlock(p) {
+    ctx.save();
+    ctx.globalAlpha = pieceAlpha(p);
     ctx.fillStyle = sideView ? '#4aa' : '#333';
     if (sideView) {
         ctx.fillRect(p.x - 10, p.y - 20, 20, 20);
@@ -86,9 +87,12 @@ function drawBlock(p) {
     } else {
         ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
     }
+    ctx.restore();
 }
 
 function drawRamp(p) {
+    ctx.save();
+    ctx.globalAlpha = pieceAlpha(p);
     ctx.fillStyle = sideView ? '#aa4' : '#555';
     ctx.beginPath();
     if (sideView) {
@@ -114,6 +118,7 @@ function drawRamp(p) {
     }
     ctx.closePath();
     ctx.fill();
+    ctx.restore();
 }
 
 function drawTarget() {
@@ -136,10 +141,13 @@ function drawPieces() {
 
 function drawBallPiece() {
     if (!ball) return;
+    ctx.save();
+    ctx.globalAlpha = pieceAlpha(ball);
     ctx.fillStyle = '#f90';
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
 }
 
 function render() {

@@ -4,6 +4,7 @@ export class Block {
         this.type = 'block';
         this.x = x;
         this.y = y;
+        this.spawnTime = Date.now();
     }
 }
 
@@ -14,6 +15,7 @@ export class Ramp {
         this.x = x;
         this.y = y;
         this.direction = direction;
+        this.spawnTime = Date.now();
     }
 }
 
@@ -26,5 +28,6 @@ export class Ball {
         this.vx = vx;
         this.vy = vy;
         this.radius = radius;
+        this.spawnTime = Date.now();
     }
 }

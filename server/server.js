@@ -2,6 +2,7 @@ const express = require('express');
 const { createServer } = require('http');
 const { WebSocketServer } = require('ws');
 const path = require('path');
+const fs = require('fs');
 const crypto = require('crypto');
 
 const app = express();
@@ -12,10 +13,30 @@ const PORT = process.env.PORT || 3000;
 // In-memory storage for connected players
 const emojiList = ['😀', '😎', '😂', '🤖', '🦄', '🐱', '🐶', '🐸', '🐵', '🐼', '🐧', '🐰'];
 const players = new Map();
-// Current puzzle state managed on the server
-let puzzleState = generatePuzzle();
 
-function generatePuzzle() {
+const DB_FILE = path.join(__dirname, 'data.json');
+
+function loadDB() {
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  } catch (e) {
+    return { sessions: {}, puzzleState: null, difficulty: 1 };
+  }
+}
+
+function saveDB(db) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+}
+
+let db = loadDB();
+let puzzleState = db.puzzleState;
+if (!puzzleState) {
+  puzzleState = generatePuzzle(db.difficulty);
+  db.puzzleState = puzzleState;
+  saveDB(db);
+}
+
+function generatePuzzle(difficulty = 1) {
   const pieces = [];
   pieces.push({
     id: crypto.randomUUID(),
@@ -24,15 +45,18 @@ function generatePuzzle() {
     y: 40,
     vx: 0,
     vy: 0,
-    radius: 8
+    radius: 8,
+    spawnTime: Date.now()
   });
-  for (let i = 0; i < 5; i++) {
+  const blockCount = 5 + Math.max(0, difficulty - 1);
+  for (let i = 0; i < blockCount; i++) {
     pieces.push({
       id: crypto.randomUUID(),
       type: 'block',
       x: Math.random() * 760 + 20,
       y: Math.random() * 560 + 20,
-      static: true
+      static: true,
+      spawnTime: Date.now()
     });
   }
   const target = {
@@ -68,7 +92,12 @@ function broadcast(obj) {
 
 wss.on('connection', (ws, req) => {
   const ip = req.socket.remoteAddress || '0.0.0.0';
-  const emoji = emojiForIP(ip);
+  let emoji = db.sessions[ip];
+  if (!emoji) {
+    emoji = emojiForIP(ip);
+    db.sessions[ip] = emoji;
+    saveDB(db);
+  }
 
   players.set(ws, { ip, emoji });
 
@@ -93,12 +122,20 @@ wss.on('connection', (ws, req) => {
 
     // Update puzzle state and broadcast actions
     if (data.type === 'addPiece') {
+      data.piece.spawnTime = Date.now();
       puzzleState.pieces.push(data.piece);
       broadcast({ type: 'addPiece', piece: data.piece });
       if (checkPuzzleComplete(data.piece)) {
         broadcast({ type: 'puzzleComplete', emoji });
-        puzzleState = generatePuzzle();
+        db.difficulty += 1;
+        db.progress = db.progress || {};
+        db.progress[ip] = (db.progress[ip] || 0) + 1;
+        puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
+        saveDB(db);
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      } else {
+        db.puzzleState = puzzleState;
+        saveDB(db);
       }
     } else if (data.type === 'ballUpdate') {
       const ballIndex = puzzleState.pieces.findIndex(p => p.id === data.ball.id);
@@ -108,8 +145,15 @@ wss.on('connection', (ws, req) => {
       broadcast({ type: 'ballUpdate', ball: data.ball });
       if (checkPuzzleComplete(data.ball)) {
         broadcast({ type: 'puzzleComplete', emoji });
-        puzzleState = generatePuzzle();
+        db.difficulty += 1;
+        db.progress = db.progress || {};
+        db.progress[ip] = (db.progress[ip] || 0) + 1;
+        puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
+        saveDB(db);
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      } else {
+        db.puzzleState = puzzleState;
+        saveDB(db);
       }
     }
   });
