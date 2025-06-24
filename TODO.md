@@ -8,7 +8,7 @@ The following features and tasks from the project requirements are not yet imple
 le JSON file persistence on the server.
 - ~~Variety of interactive puzzle elements like ramps, fans or levers.~~ Added ramp and fan pieces.
 - ~~Real puzzle completion logic that unlocks the next puzzle upon success.~~ Server now generates a new puzzle when players place a piece on the goal.
-- ~~True perspective switching between top-down and side view beyond a simple color change.~~ Client renders blocks and ramps differently in side view.
+- ~~True perspective switching between top-down and side view beyond a simple color change.~~ Client now uses the side view exclusively.
 - ~~Visual assets and animations that meet the 60 fps and modern style guideline
 s.~~ Pieces fade in smoothly when placed.
 - ~~Scaling difficulty and puzzle balancing.~~ Puzzle generation adds more block

@@ -18,7 +18,7 @@
 ## Example Gameplay Loop
 1. **Join & Emoji Selection** – player connects to the server and is assigned an emoji linked to their IP address.
 2. **Collaborative Building** – all players place and adjust puzzle pieces to guide the ball.
-3. **Perspective Toggle** – players swap between top-down and side views to refine the contraption.
+3. **Side Perspective Only** – puzzles are always shown from the side.
 4. **Puzzle Completion** – when the ball reaches its goal, animations play and the next puzzle is unlocked.
 
 Cosmetic upgrades can optionally be sold for additional player customization.

@@ -1,7 +1,9 @@
-export let sideView = false;
+export let sideView = true;
 
+// Top-down view has been removed. toggleView now simply
+// ensures the side view stays enabled.
 export function toggleView() {
-    sideView = !sideView;
+    sideView = true;
     return sideView;
 }
 
