@@ -59,6 +59,28 @@ function generatePuzzle(difficulty = 1) {
       spawnTime: Date.now()
     });
   }
+  const rampCount = Math.max(1, Math.floor(difficulty / 2));
+  for (let i = 0; i < rampCount; i++) {
+    pieces.push({
+      id: crypto.randomUUID(),
+      type: 'ramp',
+      x: Math.random() * 760 + 20,
+      y: Math.random() * 560 + 20,
+      direction: Math.random() < 0.5 ? 'left' : 'right',
+      spawnTime: Date.now()
+    });
+  }
+  const fanCount = Math.max(0, Math.floor(difficulty / 3));
+  for (let i = 0; i < fanCount; i++) {
+    pieces.push({
+      id: crypto.randomUUID(),
+      type: 'fan',
+      x: Math.random() * 760 + 20,
+      y: Math.random() * 560 + 20,
+      power: 1,
+      spawnTime: Date.now()
+    });
+  }
   const target = {
     x: Math.random() * 760 + 20,
     y: Math.random() * 560 + 20

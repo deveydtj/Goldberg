@@ -28,6 +28,57 @@ function aabbCircleCollision(cx, cy, r, rect) {
     return null;
 }
 
+function rampCollision(ball, ramp) {
+    const dx = ball.x - ramp.x;
+    const dy = ball.y - ramp.y;
+    if (dx < -12 || dx > 12 || dy < -12 || dy > 12) return null;
+
+    const sqrt2 = Math.SQRT1_2; // 1 / sqrt(2)
+    let nx, ny, dist;
+    if (ramp.direction === 'right') {
+        // line from (-10,10) to (10,-10) => normal (1,1)
+        const lineY = -dx + 10;
+        if (dy > lineY - ball.radius) {
+            // penetration depth along normal
+            dist = dy - lineY;
+            nx = sqrt2;
+            ny = sqrt2;
+        } else {
+            return null;
+        }
+    } else {
+        // left ramp: line from (-10,-10) to (10,10) => normal (-1,1)
+        const lineY = dx + 10;
+        if (dy > lineY - ball.radius) {
+            dist = dy - lineY;
+            nx = -sqrt2;
+            ny = sqrt2;
+        } else {
+            return null;
+        }
+    }
+
+    // push out along normal
+    ball.x -= (dist + ball.radius) * nx;
+    ball.y -= (dist + ball.radius) * ny;
+
+    // reflect velocity around ramp normal
+    const dot = ball.vx * nx + ball.vy * ny;
+    ball.vx = (ball.vx - 2 * dot * nx) * 0.5;
+    ball.vy = (ball.vy - 2 * dot * ny) * 0.5;
+    return ball;
+}
+
+function fanEffect(ball, fan) {
+    const dx = ball.x - fan.x;
+    const dy = ball.y - fan.y;
+    const distSq = dx * dx + dy * dy;
+    const radius = 40;
+    if (distSq < radius * radius) {
+        ball.vy -= fan.power * 2;
+    }
+}
+
 export function updateBall(ball, pieces, dt = 1) {
     ball.vy += GRAVITY * dt;
     ball.x += ball.vx * dt;
@@ -42,6 +93,10 @@ export function updateBall(ball, pieces, dt = 1) {
                 if (res.vx !== 0) ball.vx = res.vx * 0.5;
                 if (res.vy !== 0) ball.vy = res.vy * 0.5;
             }
+        } else if (p.type === 'ramp') {
+            rampCollision(ball, p);
+        } else if (p.type === 'fan') {
+            fanEffect(ball, p);
         }
     }
 

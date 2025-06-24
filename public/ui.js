@@ -11,4 +11,4 @@ export function pieceAlpha(piece, duration = 300) {
     return Math.min(age / duration, 1);
 }
 
-export { Block, Ramp, Ball } from './pieces.js';
+export { Block, Ramp, Ball, Fan } from './pieces.js';
