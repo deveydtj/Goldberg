@@ -17,6 +17,15 @@ let puzzleState = generatePuzzle();
 
 function generatePuzzle() {
   const pieces = [];
+  pieces.push({
+    id: crypto.randomUUID(),
+    type: 'ball',
+    x: 40,
+    y: 40,
+    vx: 0,
+    vy: 0,
+    radius: 8
+  });
   for (let i = 0; i < 5; i++) {
     pieces.push({
       id: crypto.randomUUID(),
@@ -87,6 +96,17 @@ wss.on('connection', (ws, req) => {
       puzzleState.pieces.push(data.piece);
       broadcast({ type: 'addPiece', piece: data.piece });
       if (checkPuzzleComplete(data.piece)) {
+        broadcast({ type: 'puzzleComplete', emoji });
+        puzzleState = generatePuzzle();
+        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      }
+    } else if (data.type === 'ballUpdate') {
+      const ballIndex = puzzleState.pieces.findIndex(p => p.id === data.ball.id);
+      if (ballIndex !== -1) {
+        puzzleState.pieces[ballIndex] = data.ball;
+      }
+      broadcast({ type: 'ballUpdate', ball: data.ball });
+      if (checkPuzzleComplete(data.ball)) {
         broadcast({ type: 'puzzleComplete', emoji });
         puzzleState = generatePuzzle();
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
