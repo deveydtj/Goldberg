@@ -39,3 +39,7 @@ package.json # Node package configuration
 ### Server Dependencies
 - **express** – hosts the static client files and provides an HTTP server.
 - **ws** – WebSocket library used for real-time multiplayer communication.
+
+### Controls
+- **v** – toggle between top-down and side views.
+- **r** – request a fresh puzzle from the server.

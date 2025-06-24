@@ -69,6 +69,9 @@ socket.addEventListener('message', event => {
             }
             break;
         case 'newPuzzle':
+            pieces = [];
+            ball = null;
+            target = null;
             pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
             ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
@@ -179,6 +182,8 @@ canvas.addEventListener('dblclick', (e) => {
 window.addEventListener('keydown', (e) => {
     if (e.key === 'v') {
         toggleView();
+    } else if (e.key === 'r') {
+        socket.send(JSON.stringify({ type: 'resetPuzzle' }));
     }
 });
 
