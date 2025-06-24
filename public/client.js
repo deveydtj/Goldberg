@@ -1,4 +1,4 @@
-import { Block, Ramp, Ball, Fan, sideView, toggleView, pieceAlpha } from './ui.js';
+import { Block, Ramp, Ball, Fan, Spring, sideView, toggleView, pieceAlpha } from './ui.js';
 import { updateBall } from './physics.js';
 
 // WebSocket connection to the server
@@ -6,6 +6,18 @@ const socket = new WebSocket(`ws://${location.host}`);
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const chatLog = document.getElementById('chatLog');
+const chatInput = document.getElementById('chatInput');
+const leaderboardEl = document.getElementById('leaderboard');
+
+const otherCursors = new Map();
+
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+        socket.send(JSON.stringify({ type: 'chat', text: chatInput.value.trim() }));
+        chatInput.value = '';
+    }
+});
 
 let myEmoji = '❓';
 let pieces = [];
@@ -24,6 +36,12 @@ socket.addEventListener('message', event => {
             pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
             ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
+            if (msg.leaderboard) {
+                leaderboardEl.innerHTML = Object.entries(msg.leaderboard)
+                    .sort((a,b) => b[1] - a[1])
+                    .map(([emo,count]) => `${emo} ${count}`)
+                    .join('<br>');
+            }
             break;
         case 'addPiece':
             pieces.push(msg.piece);
@@ -46,6 +64,26 @@ socket.addEventListener('message', event => {
             break;
         case 'playerLeft':
             console.log(`${msg.emoji} left`);
+            otherCursors.delete(msg.emoji);
+            break;
+        case 'chat':
+            if (chatLog) {
+                const div = document.createElement('div');
+                div.textContent = `${msg.emoji}: ${msg.text}`;
+                chatLog.appendChild(div);
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
+            break;
+        case 'cursor':
+            otherCursors.set(msg.emoji, { x: msg.x, y: msg.y });
+            break;
+        case 'leaderboard':
+            if (leaderboardEl) {
+                leaderboardEl.innerHTML = Object.entries(msg.leaderboard)
+                    .sort((a,b) => b[1] - a[1])
+                    .map(([emo,count]) => `${emo} ${count}`)
+                    .join('<br>');
+            }
             break;
     }
 });
@@ -54,9 +92,16 @@ canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const piece = new Block(Date.now(), x, y);
+    const piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    socket.send(JSON.stringify({ type: 'cursor', x, y }));
 });
 
 canvas.addEventListener('contextmenu', (e) => {
@@ -79,6 +124,7 @@ canvas.addEventListener('auxclick', (e) => {
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
 });
+
 
 window.addEventListener('keydown', (e) => {
     if (e.key === 'v') {
@@ -145,6 +191,18 @@ function drawFan(p) {
     ctx.restore();
 }
 
+function drawSpring(p) {
+    ctx.save();
+    ctx.globalAlpha = pieceAlpha(p);
+    ctx.strokeStyle = '#090';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+    ctx.moveTo(p.x - 6, p.y + 6);
+    ctx.lineTo(p.x + 6, p.y - 6);
+    ctx.stroke();
+    ctx.restore();
+}
+
 function drawTarget() {
     if (!target) return;
     ctx.fillStyle = '#e33';
@@ -161,6 +219,8 @@ function drawPieces() {
             drawRamp(p);
         } else if (p.type === 'fan') {
             drawFan(p);
+        } else if (p.type === 'spring') {
+            drawSpring(p);
         }
     });
 }
@@ -197,6 +257,10 @@ function render() {
     ctx.font = '24px sans-serif';
     ctx.fillStyle = '#000';
     ctx.fillText(myEmoji, 10, 30);
+
+    otherCursors.forEach((pos, emoji) => {
+        ctx.fillText(emoji, pos.x, pos.y);
+    });
 
     requestAnimationFrame(render);
 }
