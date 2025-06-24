@@ -1,4 +1,5 @@
-import { Block, Ramp } from './pieces.js';
+import { Block, Ramp, Ball } from './pieces.js';
+import { updateBall } from './physics.js';
 
 // WebSocket connection to the server
 const socket = new WebSocket(`ws://${location.host}`);
@@ -9,6 +10,7 @@ const ctx = canvas.getContext('2d');
 let myEmoji = '❓';
 let pieces = [];
 let target = null;
+let ball = null;
 let sideView = false;
 
 socket.addEventListener('open', () => {
@@ -20,14 +22,21 @@ socket.addEventListener('message', event => {
     switch (msg.type) {
         case 'welcome':
             myEmoji = msg.emoji;
-            pieces = msg.pieces || [];
+            pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
+            ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
             break;
         case 'addPiece':
             pieces.push(msg.piece);
             break;
+        case 'ballUpdate':
+            if (ball && msg.ball.id === ball.id) {
+                Object.assign(ball, msg.ball);
+            }
+            break;
         case 'newPuzzle':
-            pieces = msg.pieces || [];
+            pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
+            ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
             break;
         case 'puzzleComplete':
@@ -125,10 +134,30 @@ function drawPieces() {
     });
 }
 
+function drawBallPiece() {
+    if (!ball) return;
+    ctx.fillStyle = '#f90';
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fill();
+}
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawTarget();
     drawPieces();
+    if (ball) {
+        updateBall(ball, pieces, 1);
+        socket.send(JSON.stringify({ type: 'ballUpdate', ball }));
+        drawBallPiece();
+        if (target) {
+            const dx = ball.x - target.x;
+            const dy = ball.y - target.y;
+            if (Math.sqrt(dx * dx + dy * dy) < ball.radius + 8) {
+                socket.send(JSON.stringify({ type: 'ballUpdate', ball }));
+            }
+        }
+    }
 
     // Display current player's emoji
     ctx.font = '24px sans-serif';
