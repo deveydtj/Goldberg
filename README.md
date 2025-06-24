@@ -22,3 +22,20 @@ Emoji Goldberg Puzzle is a multiplayer collaborative puzzle game inspired by Rub
 Optional cosmetic upgrades allow players to customize puzzle pieces and expand their emoji collection.
 
 For technical details and full requirements see [REQUIREMENTS.md](REQUIREMENTS.md).
+
+## Project Structure
+```
+public/      # Client HTML and JavaScript
+server/      # Node.js server code
+package.json # Node package configuration
+```
+
+## Development Setup
+1. Install **Node.js 18** or later.
+2. From the project root run `npm install` to fetch dependencies.
+3. Start the server with `npm start`.
+4. Open [http://localhost:3000](http://localhost:3000) in a browser.
+
+### Server Dependencies
+- **express** – hosts the static client files and provides an HTTP server.
+- **ws** – WebSocket library used for real-time multiplayer communication.
