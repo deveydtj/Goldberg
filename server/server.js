@@ -206,6 +206,11 @@ wss.on('connection', (ws, req) => {
       broadcast({ type: 'chat', emoji, text: data.text });
     } else if (data.type === 'cursor') {
       broadcast({ type: 'cursor', emoji, x: data.x, y: data.y });
+    } else if (data.type === 'resetPuzzle') {
+      // regenerate puzzle at current difficulty
+      puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
+      saveDB(db);
+      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
     }
   });
 

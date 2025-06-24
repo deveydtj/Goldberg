@@ -96,3 +96,25 @@ test('players can move and remove their pieces', async () => {
   server.kill();
   await delay(100);
 });
+
+test('resetPuzzle generates a new puzzle', async () => {
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT }, stdio: 'ignore' });
+  server.unref();
+  await delay(500);
+  const ws = new WebSocket(`ws://localhost:${PORT}`);
+  await new Promise(resolve => ws.once('message', () => resolve()));
+  ws.send(JSON.stringify({ type: 'resetPuzzle' }));
+  const msg = await new Promise(resolve => {
+    ws.on('message', function handler(data) {
+      const m = JSON.parse(data);
+      if (m.type === 'newPuzzle') {
+        ws.off('message', handler);
+        resolve(m);
+      }
+    });
+  });
+  assert.equal(msg.type, 'newPuzzle');
+  ws.terminate();
+  server.kill();
+  await delay(100);
+});
