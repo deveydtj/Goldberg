@@ -22,3 +22,11 @@
 4. **Puzzle Completion** – when the ball reaches its goal, animations play and the next puzzle is unlocked.
 
 Cosmetic upgrades can optionally be sold for additional player customization.
+
+## Additional Requirements
+- **Sound design** – include short sound effects for piece interactions and a playful background music loop.
+- **Responsive layout** – ensure the interface adapts gracefully to phones and tablets with touch controls.
+- **Account support** – optional login so players can track their progress across devices.
+- **Interactive tutorial** – guide new players through the basics with a short step-by-step level.
+- **Puzzle editor** – allow the community to craft and share custom puzzles via the server.
+- **Scalable hosting** – environment variables configure server port and database location for cloud deployment.
