@@ -230,9 +230,10 @@ function drawBlock(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
     ctx.fillStyle = '#4aa';
-    ctx.fillRect(p.x - 10, p.y - 20, 20, 20);
+    // draw centered on p.x, p.y so physics & UI coordinates match
+    ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.fillRect(p.x - 10, p.y, 20, 5);
+    ctx.fillRect(p.x - 10, p.y + 10, 20, 5);
     ctx.restore();
 }
 
@@ -242,13 +243,13 @@ function drawRamp(p) {
     ctx.fillStyle = '#aa4';
     ctx.beginPath();
     if (p.direction === 'right') {
-        ctx.moveTo(p.x - 10, p.y);
-        ctx.lineTo(p.x + 10, p.y);
-        ctx.lineTo(p.x + 10, p.y - 20);
+        ctx.moveTo(p.x - 10, p.y + 10);
+        ctx.lineTo(p.x + 10, p.y + 10);
+        ctx.lineTo(p.x + 10, p.y - 10);
     } else {
-        ctx.moveTo(p.x + 10, p.y);
-        ctx.lineTo(p.x - 10, p.y);
-        ctx.lineTo(p.x - 10, p.y - 20);
+        ctx.moveTo(p.x + 10, p.y + 10);
+        ctx.lineTo(p.x - 10, p.y + 10);
+        ctx.lineTo(p.x - 10, p.y - 10);
     }
     ctx.closePath();
     ctx.fill();
