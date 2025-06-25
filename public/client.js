@@ -1,5 +1,6 @@
 import { Block, Ramp, Ball, Fan, Spring, pieceAlpha } from './ui.js';
 import { updateBall } from './physics.js';
+import { playBeep, startBackgroundMusic } from './sound.js';
 
 // WebSocket connection to the server
 const socket = new WebSocket(`ws://${location.host}`);
@@ -35,6 +36,7 @@ function pieceAt(x, y) {
 
 socket.addEventListener('open', () => {
     console.log('Connected to server');
+    startBackgroundMusic();
 });
 
 socket.addEventListener('message', event => {
@@ -54,6 +56,7 @@ socket.addEventListener('message', event => {
             break;
         case 'addPiece':
             pieces.push(msg.piece);
+            playBeep();
             break;
         case 'movePiece': {
             const p = pieces.find(p => p.id === msg.id);
@@ -62,6 +65,7 @@ socket.addEventListener('message', event => {
         }
         case 'removePiece':
             pieces = pieces.filter(p => p.id !== msg.id);
+            playBeep(330);
             break;
         case 'ballUpdate':
             if (ball && msg.ball.id === ball.id) {
@@ -124,6 +128,7 @@ canvas.addEventListener('mousedown', (e) => {
         piece.owner = myEmoji;
         pieces.push(piece);
         socket.send(JSON.stringify({ type: 'addPiece', piece }));
+        playBeep();
     }
 });
 
@@ -154,6 +159,7 @@ canvas.addEventListener('contextmenu', (e) => {
     piece.owner = myEmoji;
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
+    playBeep();
 });
 
 canvas.addEventListener('auxclick', (e) => {
@@ -165,6 +171,7 @@ canvas.addEventListener('auxclick', (e) => {
     piece.owner = myEmoji;
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
+    playBeep();
 });
 
 canvas.addEventListener('dblclick', (e) => {
@@ -175,6 +182,7 @@ canvas.addEventListener('dblclick', (e) => {
     if (p && p.owner === myEmoji) {
         pieces = pieces.filter(q => q.id !== p.id);
         socket.send(JSON.stringify({ type: 'removePiece', id: p.id }));
+        playBeep(330);
     }
 });
 

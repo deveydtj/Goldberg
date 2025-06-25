@@ -22,3 +22,4 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
 - ~~Allow players to move or delete pieces they've placed for better collaboration.~~ Added drag and double-click controls with server enforcement.
 - ~~Track puzzle completion counts in a persistent leaderboard displayed on the client.~~ Leaderboard now sent on welcome and puzzle completion.
 - ~~Add a spring piece that launches the ball upward when triggered.~~ Added Spring piece with physics and drawing.
+- ~~Sound effects and background music.~~ Added oscillator-based audio in the client.
