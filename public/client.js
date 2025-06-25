@@ -11,6 +11,7 @@ const ctx = canvas.getContext('2d');
 const chatLog = document.getElementById('chatLog');
 const chatInput = document.getElementById('chatInput');
 const leaderboardEl = document.getElementById('leaderboard');
+const resetLevelBtn = document.getElementById('resetLevelBtn');
 
 const otherCursors = new Map();
 let draggingPiece = null;
@@ -22,6 +23,11 @@ chatInput.addEventListener('keydown', (e) => {
         chatInput.value = '';
     }
 });
+if (resetLevelBtn) {
+    resetLevelBtn.addEventListener('click', () => {
+        socket.send(JSON.stringify({ type: 'resetLevel' }));
+    });
+}
 
 let myEmoji = '❓';
 let pieces = [];

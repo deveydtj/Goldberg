@@ -127,3 +127,35 @@ test('resetPuzzle generates a new puzzle', async () => {
   await delay(100);
   if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
 });
+
+test('resetLevel restores original puzzle state', async () => {
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT, DB_FILE }, stdio: 'ignore' });
+  server.unref();
+  await delay(500);
+  const ws = new WebSocket(`ws://localhost:${PORT}`);
+  const welcome = await new Promise(resolve => ws.once('message', data => resolve(JSON.parse(data))));
+  const originalIds = welcome.pieces.map(p => p.id).sort();
+
+  // modify puzzle by adding a piece
+  const piece = { id: 'temp', type: 'block', x: 10, y: 10 };
+  ws.send(JSON.stringify({ type: 'addPiece', piece }));
+  await new Promise(resolve => ws.once('message', () => resolve()));
+
+  ws.send(JSON.stringify({ type: 'resetLevel' }));
+  const msg = await new Promise(resolve => {
+    ws.on('message', function handler(data) {
+      const m = JSON.parse(data);
+      if (m.type === 'newPuzzle') {
+        ws.off('message', handler);
+        resolve(m);
+      }
+    });
+  });
+
+  const ids = (msg.pieces || []).map(p => p.id).sort();
+  assert.deepEqual(ids, originalIds);
+  ws.terminate();
+  server.kill();
+  await delay(100);
+  if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
+});

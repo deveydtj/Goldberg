@@ -47,3 +47,4 @@ package.json # Node package configuration
 
 ### Controls
 - **r** – request a fresh puzzle from the server.
+- **Reset Level** button – restart the current puzzle without changing difficulty.
