@@ -12,19 +12,14 @@ canvas {
 }
 
 header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
     padding: 8px 16px;
     background: rgba(0,0,0,0.6);
     text-align: center;
-    pointer-events: none;
 }
 
 #ui {
     position: absolute;
-    top: 0;
+    top: 50px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -80,4 +75,19 @@ header {
 
 #resetLevelBtn {
     margin-left: 8px;
+}
+
+#emojiPicker {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    padding: 4px;
+    border-radius: 4px;
+    pointer-events: auto;
+}
+
+#emojiPicker input {
+    width: 40px;
+    text-align: center;
 }

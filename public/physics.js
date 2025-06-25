@@ -90,25 +90,29 @@ function springEffect(ball, spring) {
 }
 
 export function updateBall(ball, pieces, dt = 1) {
-    ball.vy += GRAVITY * dt;
-    ball.x += ball.vx * dt;
-    ball.y += ball.vy * dt;
+    const steps = Math.max(1, Math.ceil(dt / 0.25));
+    const step = dt / steps;
+    for (let i = 0; i < steps; i++) {
+        ball.vy += GRAVITY * step;
+        ball.x += ball.vx * step;
+        ball.y += ball.vy * step;
 
-    for (const p of pieces) {
-        if (p.type === 'block') {
-            const res = aabbCircleCollision(ball.x, ball.y, ball.radius, p);
-            if (res) {
-                ball.x = res.x;
-                ball.y = res.y;
-                if (res.vx !== 0) ball.vx = res.vx * 0.5;
-                if (res.vy !== 0) ball.vy = res.vy * 0.5;
+        for (const p of pieces) {
+            if (p.type === 'block') {
+                const res = aabbCircleCollision(ball.x, ball.y, ball.radius, p);
+                if (res) {
+                    ball.x = res.x;
+                    ball.y = res.y;
+                    if (res.vx !== 0) ball.vx = res.vx * 0.5;
+                    if (res.vy !== 0) ball.vy = res.vy * 0.5;
+                }
+            } else if (p.type === 'ramp') {
+                rampCollision(ball, p);
+            } else if (p.type === 'fan') {
+                fanEffect(ball, p);
+            } else if (p.type === 'spring') {
+                springEffect(ball, p);
             }
-        } else if (p.type === 'ramp') {
-            rampCollision(ball, p);
-        } else if (p.type === 'fan') {
-            fanEffect(ball, p);
-        } else if (p.type === 'spring') {
-            springEffect(ball, p);
         }
     }
 

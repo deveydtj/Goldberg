@@ -12,6 +12,8 @@ const chatLog = document.getElementById('chatLog');
 const chatInput = document.getElementById('chatInput');
 const leaderboardEl = document.getElementById('leaderboard');
 const resetLevelBtn = document.getElementById('resetLevelBtn');
+const emojiInput = document.getElementById('emojiInput');
+const emojiBtn = document.getElementById('emojiBtn');
 
 const otherCursors = new Map();
 let draggingPiece = null;
@@ -26,6 +28,16 @@ chatInput.addEventListener('keydown', (e) => {
 if (resetLevelBtn) {
     resetLevelBtn.addEventListener('click', () => {
         socket.send(JSON.stringify({ type: 'resetLevel' }));
+    });
+}
+
+if (emojiBtn && emojiInput) {
+    emojiBtn.addEventListener('click', () => {
+        if (emojiInput.value.trim()) {
+            myEmoji = emojiInput.value.trim();
+            socket.send(JSON.stringify({ type: 'setEmoji', emoji: myEmoji }));
+            emojiInput.value = '';
+        }
     });
 }
 
@@ -66,6 +78,19 @@ socket.addEventListener('message', event => {
                     .sort((a,b) => b[1] - a[1])
                     .map(([emo,count]) => `${emo} ${count}`)
                     .join('<br>');
+            }
+            break;
+        case 'emojiConfirmed':
+            myEmoji = msg.emoji;
+            break;
+        case 'emojiChanged':
+            if (otherCursors.has(msg.oldEmoji)) {
+                const pos = otherCursors.get(msg.oldEmoji);
+                otherCursors.delete(msg.oldEmoji);
+                otherCursors.set(msg.newEmoji, pos);
+            }
+            if (myEmoji === msg.oldEmoji) {
+                myEmoji = msg.newEmoji;
             }
             break;
         case 'addPiece':
