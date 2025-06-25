@@ -23,3 +23,4 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
 - ~~Track puzzle completion counts in a persistent leaderboard displayed on the client.~~ Leaderboard now sent on welcome and puzzle completion.
 - ~~Add a spring piece that launches the ball upward when triggered.~~ Added Spring piece with physics and drawing.
 - ~~Sound effects and background music.~~ Added oscillator-based audio in the client.
+- ~~Responsive layout and touch controls.~~ Canvas now resizes and supports taps.

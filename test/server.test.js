@@ -3,11 +3,16 @@ import assert from 'node:assert/strict';
 import { spawn } from 'child_process';
 import { WebSocket } from 'ws';
 import { setTimeout as delay } from 'timers/promises';
+import { join, dirname } from 'path';
+import { unlinkSync, existsSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 const PORT = 4010;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DB_FILE = join(__dirname, 'test-db.json');
 
 test('server welcomes a new connection', async () => {
-  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT }, stdio: 'ignore' });
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT, DB_FILE }, stdio: 'ignore' });
   server.unref();
   await delay(500); // allow server to start
   const ws = new WebSocket(`ws://localhost:${PORT}`);
@@ -17,10 +22,11 @@ test('server welcomes a new connection', async () => {
   ws.terminate();
   server.kill();
   await delay(100);
+  if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
 });
 
 test('server relays chat messages', async () => {
-  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT }, stdio: 'ignore' });
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT, DB_FILE }, stdio: 'ignore' });
   server.unref();
   await delay(500);
   const ws1 = new WebSocket(`ws://localhost:${PORT}`);
@@ -43,10 +49,11 @@ test('server relays chat messages', async () => {
   ws2.terminate();
   server.kill();
   await delay(100);
+  if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
 });
 
 test('players can move and remove their pieces', async () => {
-  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT }, stdio: 'ignore' });
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT, DB_FILE }, stdio: 'ignore' });
   server.unref();
   await delay(500);
   const ws1 = new WebSocket(`ws://localhost:${PORT}`);
@@ -95,10 +102,11 @@ test('players can move and remove their pieces', async () => {
   ws2.terminate();
   server.kill();
   await delay(100);
+  if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
 });
 
 test('resetPuzzle generates a new puzzle', async () => {
-  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT }, stdio: 'ignore' });
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT, DB_FILE }, stdio: 'ignore' });
   server.unref();
   await delay(500);
   const ws = new WebSocket(`ws://localhost:${PORT}`);
@@ -117,4 +125,5 @@ test('resetPuzzle generates a new puzzle', async () => {
   ws.terminate();
   server.kill();
   await delay(100);
+  if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
 });

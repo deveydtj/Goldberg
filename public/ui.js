@@ -13,4 +13,13 @@ export function pieceAlpha(piece, duration = 300) {
     return Math.min(age / duration, 1);
 }
 
+export function setupResponsiveCanvas(canvas) {
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+}
+
 export { Block, Ramp, Ball, Fan, Spring } from './pieces.js';

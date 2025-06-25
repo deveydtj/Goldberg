@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 const emojiList = ['😀', '😎', '😂', '🤖', '🦄', '🐱', '🐶', '🐸', '🐵', '🐼', '🐧', '🐰'];
 const players = new Map();
 
-const DB_FILE = path.join(__dirname, 'data.json');
+const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'data.json');
 
 function loadDB() {
   try {
@@ -25,6 +25,7 @@ function loadDB() {
 }
 
 function saveDB(db) {
+  fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
 
