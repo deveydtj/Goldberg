@@ -4,19 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Emoji Goldberg Puzzle</title>
-    <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; background: #f0f0f0; }
-    </style>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <header>
+        <h1>Emoji Goldberg Puzzle</h1>
+    </header>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="leaderboard" style="position:absolute;top:10px;left:10px;color:#333;font-family:sans-serif;font-size:14px;background:rgba(255,255,255,0.8);padding:4px;"></div>
-    <div id="chatLog" style="position:absolute;bottom:40px;left:10px;width:300px;height:120px;overflow-y:auto;background:rgba(255,255,255,0.8);padding:5px;font-family:sans-serif;font-size:14px;"></div>
-    <input id="chatInput" type="text" placeholder="Type a message" style="position:absolute;bottom:10px;left:10px;width:300px;"/>
-    <div style="position:absolute;top:10px;right:10px;color:#333;font-family:sans-serif;font-size:14px;">
-        Click to add a block. Press 'r' for a new puzzle.
-        <button id="resetLevelBtn" style="margin-left:8px;">Reset Level</button>
+    <div id="ui">
+        <div id="leaderboard"></div>
+        <div id="chatLog"></div>
+        <input id="chatInput" type="text" placeholder="Type a message" />
+        <div id="controls">Click to add a block. Press 'r' for a new puzzle.
+            <button id="resetLevelBtn">Reset Level</button>
+        </div>
     </div>
     <script type="module" src="client.js"></script>
 </body>
