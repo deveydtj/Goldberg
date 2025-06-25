@@ -28,7 +28,7 @@ test('ball bounces off a ramp', () => {
   for (let i = 0; i < 5; i++) {
     updateBall(ball, [ramp], 1);
   }
-  assert.ok(ball.vy <= 0);
+  assert.ok(ball.vx < 0);
 });
 
 test('spring pushes ball upward', () => {

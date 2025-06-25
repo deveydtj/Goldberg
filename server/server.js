@@ -43,8 +43,8 @@ function generatePuzzle(difficulty = 1) {
   pieces.push({
     id: crypto.randomUUID(),
     type: 'ball',
-    x: 40,
-    y: 40,
+    x: 50,
+    y: 50,
     vx: 0,
     vy: 0,
     radius: 8,
@@ -210,6 +210,17 @@ wss.on('connection', (ws, req) => {
       broadcast({ type: 'chat', emoji, text: data.text });
     } else if (data.type === 'cursor') {
       broadcast({ type: 'cursor', emoji, x: data.x, y: data.y });
+    } else if (data.type === 'setEmoji') {
+      const player = players.get(ws);
+      if (player && typeof data.emoji === 'string') {
+        const oldEmoji = player.emoji;
+        player.emoji = data.emoji;
+        db.sessions[player.ip] = data.emoji;
+        saveDB(db);
+        emoji = data.emoji;
+        ws.send(JSON.stringify({ type: 'emojiConfirmed', emoji }));
+        broadcast({ type: 'emojiChanged', oldEmoji, newEmoji: data.emoji });
+      }
     } else if (data.type === 'resetPuzzle') {
       // regenerate puzzle at current difficulty
       puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
