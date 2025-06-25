@@ -13,6 +13,7 @@ Emoji Goldberg Puzzle is a multiplayer collaborative puzzle game inspired by Rub
 - **Colorful 2D art** with smooth animations and whimsical effects.
 - **Real-time multiplayer** with synchronized updates so everyone stays on the same page.
 - **Scaling difficulty** to keep new and experienced players engaged.
+- **Sound effects and background music** for a more playful experience.
 
 ## Visual and Animation Quality
 - Assets should be crisp and modern, using a consistent palette with complementary colors.
