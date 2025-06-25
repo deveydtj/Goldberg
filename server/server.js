@@ -4,6 +4,7 @@ const { WebSocketServer } = require('ws');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { generatePuzzle } = require('./puzzle-generator');
 
 const app = express();
 const httpServer = createServer(app);
@@ -37,58 +38,6 @@ if (!puzzleState) {
   saveDB(db);
 }
 let initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-
-function generatePuzzle(difficulty = 1) {
-  const pieces = [];
-  pieces.push({
-    id: crypto.randomUUID(),
-    type: 'ball',
-    x: 50,
-    y: 50,
-    vx: 0,
-    vy: 0,
-    radius: 8,
-    spawnTime: Date.now()
-  });
-  const blockCount = 5 + Math.max(0, difficulty - 1);
-  for (let i = 0; i < blockCount; i++) {
-    pieces.push({
-      id: crypto.randomUUID(),
-      type: 'block',
-      x: Math.random() * 760 + 20,
-      y: Math.random() * 560 + 20,
-      static: true,
-      spawnTime: Date.now()
-    });
-  }
-  const rampCount = Math.max(1, Math.floor(difficulty / 2));
-  for (let i = 0; i < rampCount; i++) {
-    pieces.push({
-      id: crypto.randomUUID(),
-      type: 'ramp',
-      x: Math.random() * 760 + 20,
-      y: Math.random() * 560 + 20,
-      direction: Math.random() < 0.5 ? 'left' : 'right',
-      spawnTime: Date.now()
-    });
-  }
-  const fanCount = Math.max(0, Math.floor(difficulty / 3));
-  for (let i = 0; i < fanCount; i++) {
-    pieces.push({
-      id: crypto.randomUUID(),
-      type: 'fan',
-      x: Math.random() * 760 + 20,
-      y: Math.random() * 560 + 20,
-      power: 1,
-      spawnTime: Date.now()
-    });
-  }
-  const target = {
-    x: Math.random() * 760 + 20,
-    y: Math.random() * 560 + 20
-  };
-  return { pieces, target };
-}
 
 function checkPuzzleComplete(piece) {
   const dx = piece.x - puzzleState.target.x;
@@ -135,6 +84,7 @@ wss.on('connection', (ws, req) => {
     emoji,
     pieces: puzzleState.pieces,
     target: puzzleState.target,
+    pool: puzzleState.pool,
     leaderboard: db.progress || {}
   }));
 
@@ -151,10 +101,14 @@ wss.on('connection', (ws, req) => {
 
     // Update puzzle state and broadcast actions
     if (data.type === 'addPiece') {
+      if (!puzzleState.pool[data.piece.type] || puzzleState.pool[data.piece.type] <= 0) {
+        return;
+      }
+      puzzleState.pool[data.piece.type] -= 1;
       data.piece.spawnTime = Date.now();
       data.piece.owner = emoji;
       puzzleState.pieces.push(data.piece);
-      broadcast({ type: 'addPiece', piece: data.piece });
+      broadcast({ type: 'addPiece', piece: data.piece, pool: puzzleState.pool });
       if (checkPuzzleComplete(data.piece)) {
         broadcast({ type: 'puzzleComplete', emoji });
         db.difficulty += 1;
@@ -164,7 +118,7 @@ wss.on('connection', (ws, req) => {
         initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
         saveDB(db);
         broadcastLeaderboard();
-        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target, pool: puzzleState.pool });
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
@@ -184,7 +138,7 @@ wss.on('connection', (ws, req) => {
         initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
         saveDB(db);
         broadcastLeaderboard();
-        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target, pool: puzzleState.pool });
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
@@ -201,8 +155,11 @@ wss.on('connection', (ws, req) => {
     } else if (data.type === 'removePiece') {
       const index = puzzleState.pieces.findIndex(p => p.id === data.id);
       if (index !== -1 && puzzleState.pieces[index].owner === emoji) {
-        puzzleState.pieces.splice(index, 1);
-        broadcast({ type: 'removePiece', id: data.id });
+        const removed = puzzleState.pieces.splice(index, 1)[0];
+        if (removed && puzzleState.pool[removed.type] !== undefined) {
+          puzzleState.pool[removed.type] += 1;
+        }
+        broadcast({ type: 'removePiece', id: data.id, pool: puzzleState.pool });
         db.puzzleState = puzzleState;
         saveDB(db);
       }
@@ -226,12 +183,12 @@ wss.on('connection', (ws, req) => {
       puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
       initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
       saveDB(db);
-      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target, pool: puzzleState.pool });
     } else if (data.type === 'resetLevel') {
       // restore puzzle to its original state without changing difficulty
       puzzleState = db.puzzleState = JSON.parse(JSON.stringify(initialPuzzleState));
       saveDB(db);
-      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target, pool: puzzleState.pool });
     }
   });
 

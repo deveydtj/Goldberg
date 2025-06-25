@@ -45,6 +45,7 @@ let myEmoji = '❓';
 let pieces = [];
 let target = null;
 let ball = null;
+let piecePool = {};
 
 function pieceAt(x, y) {
     return pieces.find(p => {
@@ -73,6 +74,7 @@ socket.addEventListener('message', event => {
             pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
             ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
+            piecePool = msg.pool || {};
             if (msg.leaderboard) {
                 leaderboardEl.innerHTML = Object.entries(msg.leaderboard)
                     .sort((a,b) => b[1] - a[1])
@@ -95,6 +97,7 @@ socket.addEventListener('message', event => {
             break;
         case 'addPiece':
             pieces.push(msg.piece);
+            if (msg.pool) piecePool = msg.pool;
             playBeep();
             break;
         case 'movePiece': {
@@ -104,6 +107,7 @@ socket.addEventListener('message', event => {
         }
         case 'removePiece':
             pieces = pieces.filter(p => p.id !== msg.id);
+            if (msg.pool) piecePool = msg.pool;
             playBeep(330);
             break;
         case 'ballUpdate':
@@ -118,6 +122,7 @@ socket.addEventListener('message', event => {
             pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
             ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
+            piecePool = msg.pool || {};
             break;
         case 'puzzleComplete':
             console.log(`Puzzle solved by ${msg.emoji}`);
@@ -161,9 +166,12 @@ canvas.addEventListener('mousedown', (e) => {
             dragOffset.y = y - targetPiece.y;
             return;
         }
+        const type = e.shiftKey ? 'spring' : 'block';
+        if (!piecePool[type] || piecePool[type] <= 0) return;
         const piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
         piece.owner = myEmoji;
         pieces.push(piece);
+        piecePool[type] -= 1;
         socket.send(JSON.stringify({ type: 'addPiece', piece }));
         playBeep();
     }
@@ -192,9 +200,11 @@ canvas.addEventListener('touchstart', (e) => {
         dragOffset.x = x - targetPiece.x;
         dragOffset.y = y - targetPiece.y;
     } else {
+        if (!piecePool['block'] || piecePool['block'] <= 0) return;
         const piece = new Block(Date.now(), x, y);
         piece.owner = myEmoji;
         pieces.push(piece);
+        piecePool['block'] -= 1;
         socket.send(JSON.stringify({ type: 'addPiece', piece }));
         playBeep();
     }
@@ -216,10 +226,12 @@ canvas.addEventListener('touchend', () => {
 canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     const { x, y } = coordsFromEvent(e);
+    if (!piecePool['ramp'] || piecePool['ramp'] <= 0) return;
     const direction = Math.random() < 0.5 ? 'left' : 'right';
     const piece = new Ramp(Date.now(), x, y, direction);
     piece.owner = myEmoji;
     pieces.push(piece);
+    piecePool['ramp'] -= 1;
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
     playBeep();
 });
@@ -227,9 +239,11 @@ canvas.addEventListener('contextmenu', (e) => {
 canvas.addEventListener('auxclick', (e) => {
     if (e.button !== 1) return;
     const { x, y } = coordsFromEvent(e);
+    if (!piecePool['fan'] || piecePool['fan'] <= 0) return;
     const piece = new Fan(Date.now(), x, y, 1);
     piece.owner = myEmoji;
     pieces.push(piece);
+    piecePool['fan'] -= 1;
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
     playBeep();
 });
