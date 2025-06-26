@@ -9,6 +9,7 @@ body {
 canvas {
     display: block;
     background: #111;
+    outline: none;
 }
 
 header {
@@ -105,6 +106,7 @@ header {
     border-radius: 4px;
     cursor: pointer;
     user-select: none;
+    outline: none;
 }
 
 #rotateBtn {
@@ -128,5 +130,38 @@ header {
 
 #emojiPicker input {
     width: 40px;
+    text-align: center;
+}
+
+/* Focus ring for keyboard navigation */
+canvas:focus,
+.palette-item:focus,
+button:focus,
+input:focus {
+    outline: 2px solid #6cf;
+}
+
+/* Tutorial overlay */
+#tutorial {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+#tutorial.hidden {
+    display: none;
+}
+
+#tutorial .tutorial-content {
+    background: #222;
+    padding: 20px;
+    border-radius: 8px;
     text-align: center;
 }

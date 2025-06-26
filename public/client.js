@@ -19,6 +19,8 @@ const emojiInput = document.getElementById('emojiInput');
 const emojiBtn = document.getElementById('emojiBtn');
 const palette = document.getElementById('palette');
 const rotateBtn = document.getElementById('rotateBtn');
+const tutorialEl = document.getElementById('tutorial');
+const skipTutorialBtn = document.getElementById('skipTutorialBtn');
 
 const otherCursors = new Map();
 let draggingPiece = null;
@@ -70,6 +72,13 @@ if (rotateBtn) {
     });
 }
 
+if (skipTutorialBtn) {
+    skipTutorialBtn.addEventListener('click', () => {
+        tutorialEl.classList.add('hidden');
+        canvas.focus();
+    });
+}
+
 let myEmoji = '❓';
 let pieces = [];
 let target = null;
@@ -78,6 +87,8 @@ let selectedType = 'block';
 let selectedDirection = 'right';
 let puzzleStartTime = Date.now();
 let resets = 0;
+let isRunning = false;
+let ballInitial = null;
 const HANDLE_RADIUS = 6;
 let hover = { x: 0, y: 0 };
 let hoveredPiece = null;
@@ -148,6 +159,8 @@ socket.addEventListener('message', event => {
                 ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
                 target = msg.target;
             }
+            ballInitial = ball ? { ...ball } : null;
+            isRunning = false;
             puzzleStartTime = Date.now();
             resets = 0;
             updateHud();
@@ -210,6 +223,8 @@ socket.addEventListener('message', event => {
                 ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
                 target = msg.target;
             }
+            ballInitial = ball ? { ...ball } : null;
+            isRunning = false;
             resets = 0;
             puzzleStartTime = Date.now();
             updateHud();
@@ -396,10 +411,37 @@ canvas.addEventListener('dblclick', (e) => {
 
 
 window.addEventListener('keydown', (e) => {
+    if (tutorialEl && !tutorialEl.classList.contains('hidden')) return;
     if (e.key === 'r') {
         socket.send(JSON.stringify({ type: 'resetPuzzle' }));
         resets++;
         updateHud();
+    } else if (e.key === 'R') {
+        if (hoveredPiece && hoveredPiece.type === 'ramp' && hoveredPiece.owner === myEmoji) {
+            hoveredPiece.direction = 'right';
+            socket.send(JSON.stringify({ type: 'rotatePiece', id: hoveredPiece.id, direction: 'right' }));
+            playBeep();
+        }
+    } else if (e.key === 'f' || e.key === 'F') {
+        if (hoveredPiece && hoveredPiece.type === 'ramp' && hoveredPiece.owner === myEmoji) {
+            hoveredPiece.direction = 'left';
+            socket.send(JSON.stringify({ type: 'rotatePiece', id: hoveredPiece.id, direction: 'left' }));
+            playBeep();
+        }
+    } else if (e.key === 'Delete') {
+        if (hoveredPiece && hoveredPiece.owner === myEmoji) {
+            pieces = pieces.filter(p => p.id !== hoveredPiece.id);
+            socket.send(JSON.stringify({ type: 'removePiece', id: hoveredPiece.id }));
+            playBeep(330);
+            hoveredPiece = null;
+            updateHud();
+        }
+    } else if (e.code === 'Space') {
+        isRunning = !isRunning;
+        if (ballInitial) {
+            ball = { ...ballInitial };
+        }
+        e.preventDefault();
     }
 });
 
@@ -524,16 +566,18 @@ function render() {
     drawTarget();
     drawPieces();
     if (ball) {
-        updateBall(ball, pieces, 1);
-        socket.send(JSON.stringify({ type: 'ballUpdate', ball }));
-        drawBallPiece();
-        if (target) {
-            const dx = ball.x - target.x;
-            const dy = ball.y - target.y;
-            if (Math.sqrt(dx * dx + dy * dy) < ball.radius + 8) {
-                socket.send(JSON.stringify({ type: 'ballUpdate', ball }));
+        if (isRunning) {
+            updateBall(ball, pieces, 1);
+            socket.send(JSON.stringify({ type: 'ballUpdate', ball }));
+            if (target) {
+                const dx = ball.x - target.x;
+                const dy = ball.y - target.y;
+                if (Math.sqrt(dx * dx + dy * dy) < ball.radius + 8) {
+                    socket.send(JSON.stringify({ type: 'ballUpdate', ball }));
+                }
             }
         }
+        drawBallPiece();
     }
 
     // Display current player's emoji
