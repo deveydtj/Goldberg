@@ -28,10 +28,10 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
 ## Next work items
 - Rewrite generator using a three-phase algorithm starting from `levelGenerator.js`.
  - ~~Add Poisson-disk spacing utility (`minDistancePx`).~~ Implemented in `server/levelGenerator.js`.
-- Create a headless solver worker returning `solutionPath` and `difficultyScore`; cache by seed.
+- ~~Create a headless solver worker returning `solutionPath` and `difficultyScore`; cache by seed.~~ Implemented in `server/solver.js`.
 - Unit tests:
   - ~~generator never overlaps pieces closer than `minDistancePx`.~~ Added `generator.test.js`.
-  - solver always confirms a generated level is solvable.
+  - ~~solver always confirms a generated level is solvable.~~ Added `solver.test.js`.
 - Piece-palette UI dock with rotate handles for mouse and touch.
 - Show piece counters and a scoring HUD.
 - Implement Run/Edit phase state machine with ghost replays of failed runs.
