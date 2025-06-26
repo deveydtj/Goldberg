@@ -1,10 +1,12 @@
 export const GRAVITY = 0.5;
 
 function aabbCircleCollision(cx, cy, r, rect) {
-    const left = rect.x - 10;
-    const right = rect.x + 10;
-    const top = rect.y - 10;
-    const bottom = rect.y + 10;
+    const halfW = (rect.width || 20) / 2;
+    const halfH = (rect.height || 20) / 2;
+    const left = rect.x - halfW;
+    const right = rect.x + halfW;
+    const top = rect.y - halfH;
+    const bottom = rect.y + halfH;
     const nearestX = Math.max(left, Math.min(cx, right));
     const nearestY = Math.max(top, Math.min(cy, bottom));
     const dx = cx - nearestX;
@@ -98,13 +100,13 @@ export function updateBall(ball, pieces, dt = 1) {
         ball.y += ball.vy * step;
 
         for (const p of pieces) {
-            if (p.type === 'block') {
+            if (p.type === 'block' || p.type === 'wall') {
                 const res = aabbCircleCollision(ball.x, ball.y, ball.radius, p);
                 if (res) {
                     ball.x = res.x;
                     ball.y = res.y;
-                    if (res.vx !== 0) ball.vx = res.vx * 0.5;
-                    if (res.vy !== 0) ball.vy = res.vy * 0.5;
+                    if (res.vx !== undefined) ball.vx = res.vx * 0.5;
+                    if (res.vy !== undefined) ball.vy = res.vy * 0.5;
                 }
             } else if (p.type === 'ramp') {
                 rampCollision(ball, p);

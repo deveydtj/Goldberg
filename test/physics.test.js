@@ -37,3 +37,13 @@ test('spring pushes ball upward', () => {
   updateBall(ball, [spring], 1);
   assert.ok(ball.vy < 0);
 });
+
+test('ball collides with wall obstacle', () => {
+  const wall = { id: 'w1', type: 'wall', x: 60, y: 50, width: 60, height: 20, static: true };
+  const ball = { id: 'ball', type: 'ball', x: 10, y: 50, vx: 10, vy: 0, radius: 5 };
+  for (let i = 0; i < 20; i++) {
+    updateBall(ball, [wall], 0.25);
+  }
+  assert.equal(ball.x, 25);
+  assert.equal(ball.vx, 0);
+});

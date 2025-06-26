@@ -164,6 +164,14 @@ wss.on('connection', (ws, req) => {
         db.puzzleState = puzzleState;
         saveDB(db);
       }
+    } else if (data.type === 'rotatePiece') {
+      const piece = puzzleState.pieces.find(p => p.id === data.id);
+      if (piece && piece.owner === emoji && piece.type === 'ramp') {
+        piece.direction = data.direction;
+        broadcast({ type: 'rotatePiece', id: piece.id, direction: piece.direction });
+        db.puzzleState = puzzleState;
+        saveDB(db);
+      }
     } else if (data.type === 'removePiece') {
       const index = puzzleState.pieces.findIndex(p => p.id === data.id);
       if (index !== -1 && puzzleState.pieces[index].owner === emoji) {

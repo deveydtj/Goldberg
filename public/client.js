@@ -1,4 +1,4 @@
-import { Block, Ramp, Ball, Fan, Spring, pieceAlpha, setupResponsiveCanvas } from './ui.js';
+import { Block, Ramp, Ball, Fan, Spring, Wall, pieceAlpha, setupResponsiveCanvas } from './ui.js';
 import { updateBall } from './physics.js';
 import { playBeep, startBackgroundMusic } from './sound.js';
 
@@ -71,11 +71,16 @@ let target = null;
 let ball = null;
 let selectedType = 'block';
 let selectedDirection = 'right';
+const HANDLE_RADIUS = 6;
+let hover = { x: 0, y: 0 };
+let hoveredPiece = null;
 
 function pieceAt(x, y) {
     return pieces.find(p => {
         if (p.type === 'ball') return false;
-        return Math.abs(p.x - x) <= 10 && Math.abs(p.y - y) <= 10;
+        const hw = (p.width || 20) / 2;
+        const hh = (p.height || 20) / 2;
+        return Math.abs(p.x - x) <= hw && Math.abs(p.y - y) <= hh;
     });
 }
 
@@ -84,6 +89,19 @@ function coordsFromEvent(e) {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+function rotateHandlePos(p) {
+    return { x: p.x + 12, y: p.y - 12 };
+}
+
+function handleForPoint(x, y) {
+    const p = pieceAt(x, y);
+    if (!p || p.owner !== myEmoji || p.type !== 'ramp') return null;
+    const pos = rotateHandlePos(p);
+    const dx = x - pos.x;
+    const dy = y - pos.y;
+    return Math.sqrt(dx * dx + dy * dy) <= HANDLE_RADIUS ? p : null;
 }
 
 socket.addEventListener('open', () => {
@@ -126,6 +144,11 @@ socket.addEventListener('message', event => {
         case 'movePiece': {
             const p = pieces.find(p => p.id === msg.id);
             if (p) { p.x = msg.x; p.y = msg.y; }
+            break;
+        }
+        case 'rotatePiece': {
+            const p = pieces.find(p => p.id === msg.id);
+            if (p) { p.direction = msg.direction; }
             break;
         }
         case 'removePiece':
@@ -180,11 +203,19 @@ socket.addEventListener('message', event => {
 canvas.addEventListener('mousedown', (e) => {
     const { x, y } = coordsFromEvent(e);
     if (e.button === 0) {
+        const handlePiece = handleForPoint(x, y);
+        if (handlePiece) {
+            handlePiece.direction = handlePiece.direction === 'right' ? 'left' : 'right';
+            socket.send(JSON.stringify({ type: 'rotatePiece', id: handlePiece.id, direction: handlePiece.direction }));
+            playBeep();
+            return;
+        }
         const targetPiece = pieceAt(x, y);
         if (targetPiece && targetPiece.owner === myEmoji) {
             draggingPiece = targetPiece;
             dragOffset.x = x - targetPiece.x;
             dragOffset.y = y - targetPiece.y;
+            hoveredPiece = targetPiece;
             return;
         }
         let piece;
@@ -194,6 +225,8 @@ canvas.addEventListener('mousedown', (e) => {
             piece = new Fan(Date.now(), x, y, 1);
         } else if (selectedType === 'spring') {
             piece = new Spring(Date.now(), x, y, 8);
+        } else if (selectedType === 'wall') {
+            piece = new Wall(Date.now(), x, y);
         } else {
             piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
         }
@@ -213,19 +246,33 @@ canvas.addEventListener('mousemove', (e) => {
     } else {
         socket.send(JSON.stringify({ type: 'cursor', x, y }));
     }
+    hover.x = x;
+    hover.y = y;
+    if (!draggingPiece) {
+        hoveredPiece = pieceAt(x, y);
+    }
 });
 
 canvas.addEventListener('mouseup', () => {
     draggingPiece = null;
+    hoveredPiece = null;
 });
 
 canvas.addEventListener('touchstart', (e) => {
     const { x, y } = coordsFromEvent(e);
+    const handlePiece = handleForPoint(x, y);
+    if (handlePiece) {
+        handlePiece.direction = handlePiece.direction === 'right' ? 'left' : 'right';
+        socket.send(JSON.stringify({ type: 'rotatePiece', id: handlePiece.id, direction: handlePiece.direction }));
+        playBeep();
+        return;
+    }
     const targetPiece = pieceAt(x, y);
     if (targetPiece && targetPiece.owner === myEmoji) {
         draggingPiece = targetPiece;
         dragOffset.x = x - targetPiece.x;
         dragOffset.y = y - targetPiece.y;
+        hoveredPiece = targetPiece;
     } else {
         let piece;
         if (selectedType === 'ramp') {
@@ -234,6 +281,8 @@ canvas.addEventListener('touchstart', (e) => {
             piece = new Fan(Date.now(), x, y, 1);
         } else if (selectedType === 'spring') {
             piece = new Spring(Date.now(), x, y, 8);
+        } else if (selectedType === 'wall') {
+            piece = new Wall(Date.now(), x, y);
         } else {
             piece = new Block(Date.now(), x, y);
         }
@@ -251,10 +300,16 @@ canvas.addEventListener('touchmove', (e) => {
         draggingPiece.y = y - dragOffset.y;
         socket.send(JSON.stringify({ type: 'movePiece', id: draggingPiece.id, x: draggingPiece.x, y: draggingPiece.y }));
     }
+    hover.x = x;
+    hover.y = y;
+    if (!draggingPiece) {
+        hoveredPiece = pieceAt(x, y);
+    }
 });
 
 canvas.addEventListener('touchend', () => {
     draggingPiece = null;
+    hoveredPiece = null;
 });
 
 canvas.addEventListener('contextmenu', (e) => {
@@ -323,6 +378,9 @@ function drawRamp(p) {
     ctx.closePath();
     ctx.fill();
     ctx.restore();
+    if (p.owner === myEmoji && hoveredPiece === p) {
+        drawRotateHandle(p);
+    }
 }
 
 function drawFan(p) {
@@ -351,6 +409,28 @@ function drawSpring(p) {
     ctx.restore();
 }
 
+function drawRotateHandle(p) {
+    const pos = rotateHandlePos(p);
+    ctx.save();
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, HANDLE_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawWall(p) {
+    ctx.save();
+    ctx.globalAlpha = pieceAlpha(p);
+    ctx.fillStyle = '#844';
+    ctx.fillRect(p.x - p.width / 2, p.y - p.height / 2, p.width, p.height);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(p.x - p.width / 2, p.y + p.height / 2, p.width, 5);
+    ctx.restore();
+}
+
 function drawTarget() {
     if (!target) return;
     ctx.fillStyle = '#e33';
@@ -369,6 +449,8 @@ function drawPieces() {
             drawFan(p);
         } else if (p.type === 'spring') {
             drawSpring(p);
+        } else if (p.type === 'wall') {
+            drawWall(p);
         }
     });
 }

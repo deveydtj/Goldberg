@@ -43,6 +43,7 @@ function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
   const blockCount = 5 + Math.max(0, difficulty - 1);
   const rampCount = Math.max(1, Math.floor(difficulty / 2));
   const fanCount = Math.max(0, Math.floor(difficulty / 3));
+  const wallCount = Math.max(0, Math.floor(difficulty / 3));
 
   for (let i = 0; i < blockCount; i++) {
     const pos = randomPosition(existing);
@@ -78,6 +79,21 @@ function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
       x: pos.x,
       y: pos.y,
       power: 1,
+      spawnTime: Date.now()
+    });
+    existing.push(pos);
+  }
+
+  for (let i = 0; i < wallCount; i++) {
+    const pos = randomPosition(existing);
+    pieces.push({
+      id: crypto.randomUUID(),
+      type: 'wall',
+      x: pos.x,
+      y: pos.y,
+      width: 60,
+      height: 20,
+      static: true,
       spawnTime: Date.now()
     });
     existing.push(pos);

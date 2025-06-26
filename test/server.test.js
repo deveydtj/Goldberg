@@ -159,3 +159,43 @@ test('resetLevel restores original puzzle state', async () => {
   await delay(100);
   if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
 });
+
+test('players can rotate their pieces', async () => {
+  const server = spawn(process.execPath, ['server/server.js'], { env: { PORT, DB_FILE }, stdio: 'ignore' });
+  server.unref();
+  await delay(500);
+  const ws1 = new WebSocket(`ws://localhost:${PORT}`);
+  const ws2 = new WebSocket(`ws://localhost:${PORT}`);
+  await new Promise(resolve => ws1.once('message', () => resolve()));
+  await new Promise(resolve => ws2.once('message', () => resolve()));
+
+  const piece = { id: 'r1', type: 'ramp', x: 40, y: 40, direction: 'right' };
+  ws1.send(JSON.stringify({ type: 'addPiece', piece }));
+  const added = await new Promise(resolve => {
+    ws2.on('message', function handler(data) {
+      const m = JSON.parse(data);
+      if (m.type === 'addPiece') {
+        ws2.off('message', handler);
+        resolve(m.piece);
+      }
+    });
+  });
+
+  ws1.send(JSON.stringify({ type: 'rotatePiece', id: added.id, direction: 'left' }));
+  const rotated = await new Promise(resolve => {
+    ws2.on('message', function handler(data) {
+      const m = JSON.parse(data);
+      if (m.type === 'rotatePiece') {
+        ws2.off('message', handler);
+        resolve(m);
+      }
+    });
+  });
+  assert.equal(rotated.direction, 'left');
+
+  ws1.terminate();
+  ws2.terminate();
+  server.kill();
+  await delay(100);
+  if (existsSync(DB_FILE)) unlinkSync(DB_FILE);
+});
