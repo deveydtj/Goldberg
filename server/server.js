@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { generatePuzzle } = require('./levelGenerator');
+const { solvePuzzle } = require('./solver');
 
 const app = express();
 const httpServer = createServer(app);
@@ -37,6 +38,12 @@ if (!puzzleState) {
   db.puzzleState = puzzleState;
   saveDB(db);
 }
+solvePuzzle(puzzleState).then(res => {
+  puzzleState.solutionPath = res.solutionPath;
+  puzzleState.difficultyScore = res.difficultyScore;
+  db.puzzleState = puzzleState;
+  saveDB(db);
+});
 let initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
 
 function checkPuzzleComplete(piece) {
@@ -110,8 +117,13 @@ wss.on('connection', (ws, req) => {
         db.progress = db.progress || {};
         db.progress[ip] = (db.progress[ip] || 0) + 1;
         puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
+        solvePuzzle(puzzleState).then(res => {
+          puzzleState.solutionPath = res.solutionPath;
+          puzzleState.difficultyScore = res.difficultyScore;
+          db.puzzleState = puzzleState;
+          saveDB(db);
+        });
         initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-        saveDB(db);
         broadcastLeaderboard();
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
       } else {
@@ -130,8 +142,13 @@ wss.on('connection', (ws, req) => {
         db.progress = db.progress || {};
         db.progress[ip] = (db.progress[ip] || 0) + 1;
         puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
+        solvePuzzle(puzzleState).then(res => {
+          puzzleState.solutionPath = res.solutionPath;
+          puzzleState.difficultyScore = res.difficultyScore;
+          db.puzzleState = puzzleState;
+          saveDB(db);
+        });
         initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-        saveDB(db);
         broadcastLeaderboard();
         broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
       } else {
@@ -173,8 +190,13 @@ wss.on('connection', (ws, req) => {
     } else if (data.type === 'resetPuzzle') {
       // regenerate puzzle at current difficulty
       puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
+      solvePuzzle(puzzleState).then(res => {
+        puzzleState.solutionPath = res.solutionPath;
+        puzzleState.difficultyScore = res.difficultyScore;
+        db.puzzleState = puzzleState;
+        saveDB(db);
+      });
       initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-      saveDB(db);
       broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
     } else if (data.type === 'resetLevel') {
       // restore puzzle to its original state without changing difficulty

@@ -24,7 +24,7 @@ function randomPosition(existing=[]) {
            y: Math.random() * (HEIGHT - MARGIN*2) + MARGIN };
 }
 
-function generatePuzzle(difficulty = 1) {
+function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
   const pieces = [];
   // start with ball at a fixed position
   const ball = {
@@ -87,7 +87,7 @@ function generatePuzzle(difficulty = 1) {
   const targetPos = randomPosition(existing);
   const target = { x: targetPos.x, y: targetPos.y };
 
-  return { pieces, target };
+  return { seed, difficulty, pieces, target };
 }
 
 module.exports = { generatePuzzle, minDistancePx };
