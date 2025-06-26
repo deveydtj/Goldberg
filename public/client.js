@@ -1,6 +1,6 @@
 import { Block, Ramp, Ball, Fan, Spring, Wall, pieceAlpha, setupResponsiveCanvas } from './ui.js';
 import { updateBall } from './physics.js';
-import { playBeep, startBackgroundMusic } from './sound.js';
+import { playBeep, startBackgroundMusic, setMasterVolume, masterVolume } from './sound.js';
 import { generatePuzzle } from './levelGenerator.js';
 
 // WebSocket connection to the server
@@ -21,10 +21,37 @@ const palette = document.getElementById('palette');
 const rotateBtn = document.getElementById('rotateBtn');
 const tutorialEl = document.getElementById('tutorial');
 const skipTutorialBtn = document.getElementById('skipTutorialBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const volumeSlider = document.getElementById('volumeSlider');
+const colorBlindToggle = document.getElementById('colorBlindToggle');
 
 const otherCursors = new Map();
 let draggingPiece = null;
 let dragOffset = { x: 0, y: 0 };
+
+const normalPalette = {
+    block: '#4aa',
+    ramp: '#aa4',
+    fan: '#88c',
+    spring: '#090',
+    wall: '#844',
+    ball: '#f90',
+    target: '#e33'
+};
+
+const cbPalette = {
+    block: '#377eb8',
+    ramp: '#984ea3',
+    fan: '#4daf4a',
+    spring: '#e41a1c',
+    wall: '#ff7f00',
+    ball: '#ffff33',
+    target: '#a65628'
+};
+
+let paletteColors = normalPalette;
 
 chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && chatInput.value.trim() !== '') {
@@ -76,6 +103,30 @@ if (skipTutorialBtn) {
     skipTutorialBtn.addEventListener('click', () => {
         tutorialEl.classList.add('hidden');
         canvas.focus();
+    });
+}
+
+if (settingsBtn && settingsModal && closeSettingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('hidden');
+        if (volumeSlider) volumeSlider.value = masterVolume;
+        if (colorBlindToggle) colorBlindToggle.checked = paletteColors === cbPalette;
+    });
+    closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        canvas.focus();
+    });
+}
+
+if (volumeSlider) {
+    volumeSlider.addEventListener('input', () => {
+        setMasterVolume(parseFloat(volumeSlider.value));
+    });
+}
+
+if (colorBlindToggle) {
+    colorBlindToggle.addEventListener('change', () => {
+        paletteColors = colorBlindToggle.checked ? cbPalette : normalPalette;
     });
 }
 
@@ -448,7 +499,7 @@ window.addEventListener('keydown', (e) => {
 function drawBlock(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.fillStyle = '#4aa';
+    ctx.fillStyle = paletteColors.block;
     // draw centered on p.x, p.y so physics & UI coordinates match
     ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
@@ -459,7 +510,7 @@ function drawBlock(p) {
 function drawRamp(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.fillStyle = '#aa4';
+    ctx.fillStyle = paletteColors.ramp;
     ctx.beginPath();
     if (p.direction === 'right') {
         ctx.moveTo(p.x - 10, p.y + 10);
@@ -481,12 +532,12 @@ function drawRamp(p) {
 function drawFan(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.fillStyle = '#88c';
+    ctx.fillStyle = paletteColors.fan;
     ctx.beginPath();
     ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
     ctx.moveTo(p.x, p.y);
     ctx.lineTo(p.x, p.y - 15);
-    ctx.strokeStyle = '#88c';
+    ctx.strokeStyle = paletteColors.fan;
     ctx.stroke();
     ctx.fill();
     ctx.restore();
@@ -495,7 +546,7 @@ function drawFan(p) {
 function drawSpring(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.strokeStyle = '#090';
+    ctx.strokeStyle = paletteColors.spring;
     ctx.beginPath();
     ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
     ctx.moveTo(p.x - 6, p.y + 6);
@@ -519,7 +570,7 @@ function drawRotateHandle(p) {
 function drawWall(p) {
     ctx.save();
     ctx.globalAlpha = pieceAlpha(p);
-    ctx.fillStyle = '#844';
+    ctx.fillStyle = paletteColors.wall;
     ctx.fillRect(p.x - p.width / 2, p.y - p.height / 2, p.width, p.height);
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.fillRect(p.x - p.width / 2, p.y + p.height / 2, p.width, 5);
@@ -528,7 +579,7 @@ function drawWall(p) {
 
 function drawTarget() {
     if (!target) return;
-    ctx.fillStyle = '#e33';
+    ctx.fillStyle = paletteColors.target;
     ctx.beginPath();
     ctx.arc(target.x, target.y, 8, 0, Math.PI * 2);
     ctx.fill();
@@ -554,7 +605,7 @@ function drawBallPiece() {
     if (!ball) return;
     ctx.save();
     ctx.globalAlpha = pieceAlpha(ball);
-    ctx.fillStyle = '#f90';
+    ctx.fillStyle = paletteColors.ball;
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fill();

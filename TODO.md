@@ -38,7 +38,7 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
  - ~~Static wall obstacle piece.~~ Implemented in codebase.
  - One-way gate and Magnet with new force calculations.
 - ~~Keyboard shortcuts with focus ring and a skip-able tutorial.~~ Added keydown controls, focus outlines and a dismissible tutorial overlay.
-- Settings modal for audio slider and color-blind palette toggle.
+ - ~~Settings modal for audio slider and color-blind palette toggle.~~ Added modal with volume slider and color-blind palette toggle.
 - ~~Broadcast only the seed so clients regenerate levels and persist per-emoji scores and fastest solves.~~ Implemented deterministic level regeneration.
 - Add victory confetti tweens, mobile haptics on goal collision and overall ghost replay polish.
 - CI must lint, run tests and solve a level in under 500 ms, plus a smoke test verifying multiplayer sync.

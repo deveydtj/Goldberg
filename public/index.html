@@ -33,6 +33,7 @@
         </div>
         <div id="controls">Click to add a block. Press 'r' for a new puzzle.
             <button id="resetLevelBtn">Reset Level</button>
+            <button id="settingsBtn">Settings</button>
         </div>
     </div>
     <div id="tutorial" class="modal">
@@ -40,6 +41,20 @@
             <h2>Welcome!</h2>
             <p>Use <strong>R/F</strong> to rotate ramps, <strong>Delete</strong> to remove a piece and <strong>Space</strong> to start or stop a test run.</p>
             <button id="skipTutorialBtn">Start Playing</button>
+        </div>
+    </div>
+    <div id="settingsModal" class="modal hidden">
+        <div class="settings-content">
+            <h2>Settings</h2>
+            <label>Volume:
+                <input id="volumeSlider" type="range" min="0" max="1" step="0.01" />
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" id="colorBlindToggle" /> Color blind palette
+            </label>
+            <br>
+            <button id="closeSettingsBtn">Close</button>
         </div>
     </div>
     <script type="module" src="client.js"></script>
