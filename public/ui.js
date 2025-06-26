@@ -22,4 +22,4 @@ export function setupResponsiveCanvas(canvas) {
     window.addEventListener('resize', resize);
 }
 
-export { Block, Ramp, Ball, Fan, Spring } from './pieces.js';
+export { Block, Ramp, Ball, Fan, Spring, Wall } from './pieces.js';

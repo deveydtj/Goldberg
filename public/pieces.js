@@ -53,3 +53,16 @@ export class Ball {
         this.spawnTime = Date.now();
     }
 }
+
+export class Wall {
+    constructor(id, x, y, width = 60, height = 20) {
+        this.id = id;
+        this.type = 'wall';
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.static = true;
+        this.spawnTime = Date.now();
+    }
+}

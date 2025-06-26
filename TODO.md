@@ -32,10 +32,11 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
 - Unit tests:
   - ~~generator never overlaps pieces closer than `minDistancePx`.~~ Added `generator.test.js`.
   - ~~solver always confirms a generated level is solvable.~~ Added `solver.test.js`.
-- Piece-palette UI dock with rotate handles for mouse and touch.
+ - ~~Piece-palette UI dock with rotate handles for mouse and touch.~~ Implemented rotate handles and hover detection for ramp pieces.
 - Show piece counters and a scoring HUD.
 - Implement Run/Edit phase state machine with ghost replays of failed runs.
-- New obstacle pieces: Static wall, One-way gate and Magnet with new force calculations.
+ - ~~Static wall obstacle piece.~~ Implemented in codebase.
+ - One-way gate and Magnet with new force calculations.
 - Keyboard shortcuts with focus ring and a skip-able tutorial.
 - Settings modal for audio slider and color-blind palette toggle.
 - Broadcast only the seed so clients regenerate levels and persist per-emoji scores and fastest solves.
