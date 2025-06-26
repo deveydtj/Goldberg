@@ -24,3 +24,20 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
 - ~~Add a spring piece that launches the ball upward when triggered.~~ Added Spring piece with physics and drawing.
 - ~~Sound effects and background music.~~ Added oscillator-based audio in the client.
 - ~~Responsive layout and touch controls.~~ Canvas now resizes and supports taps.
+
+## Next work items
+- Rewrite generator using a three-phase algorithm starting from `levelGenerator.js`.
+- Add Poisson-disk spacing utility (`minDistancePx`).
+- Create a headless solver worker returning `solutionPath` and `difficultyScore`; cache by seed.
+- Unit tests:
+  - generator never overlaps pieces closer than `minDistancePx`.
+  - solver always confirms a generated level is solvable.
+- Piece-palette UI dock with rotate handles for mouse and touch.
+- Show piece counters and a scoring HUD.
+- Implement Run/Edit phase state machine with ghost replays of failed runs.
+- New obstacle pieces: Static wall, One-way gate and Magnet with new force calculations.
+- Keyboard shortcuts with focus ring and a skip-able tutorial.
+- Settings modal for audio slider and color-blind palette toggle.
+- Broadcast only the seed so clients regenerate levels and persist per-emoji scores and fastest solves.
+- Add victory confetti tweens, mobile haptics on goal collision and overall ghost replay polish.
+- CI must lint, run tests and solve a level in under 500 ms, plus a smoke test verifying multiplayer sync.
