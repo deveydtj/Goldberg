@@ -14,6 +14,8 @@ const leaderboardEl = document.getElementById('leaderboard');
 const resetLevelBtn = document.getElementById('resetLevelBtn');
 const emojiInput = document.getElementById('emojiInput');
 const emojiBtn = document.getElementById('emojiBtn');
+const palette = document.getElementById('palette');
+const rotateBtn = document.getElementById('rotateBtn');
 
 const otherCursors = new Map();
 let draggingPiece = null;
@@ -41,10 +43,34 @@ if (emojiBtn && emojiInput) {
     });
 }
 
+if (palette) {
+    palette.addEventListener('click', (e) => {
+        const item = e.target.closest('.palette-item');
+        if (!item) return;
+        selectedType = item.dataset.type;
+        if (item.dataset.direction) {
+            selectedDirection = item.dataset.direction;
+        }
+    });
+}
+
+if (rotateBtn) {
+    rotateBtn.addEventListener('click', () => {
+        selectedDirection = selectedDirection === 'right' ? 'left' : 'right';
+        const rampItem = document.getElementById('rampItem');
+        if (rampItem) {
+            rampItem.dataset.direction = selectedDirection;
+            rampItem.textContent = selectedDirection === 'right' ? 'Ramp ▶' : 'Ramp ◀';
+        }
+    });
+}
+
 let myEmoji = '❓';
 let pieces = [];
 let target = null;
 let ball = null;
+let selectedType = 'block';
+let selectedDirection = 'right';
 
 function pieceAt(x, y) {
     return pieces.find(p => {
@@ -161,7 +187,16 @@ canvas.addEventListener('mousedown', (e) => {
             dragOffset.y = y - targetPiece.y;
             return;
         }
-        const piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
+        let piece;
+        if (selectedType === 'ramp') {
+            piece = new Ramp(Date.now(), x, y, selectedDirection);
+        } else if (selectedType === 'fan') {
+            piece = new Fan(Date.now(), x, y, 1);
+        } else if (selectedType === 'spring') {
+            piece = new Spring(Date.now(), x, y, 8);
+        } else {
+            piece = e.shiftKey ? new Spring(Date.now(), x, y, 8) : new Block(Date.now(), x, y);
+        }
         piece.owner = myEmoji;
         pieces.push(piece);
         socket.send(JSON.stringify({ type: 'addPiece', piece }));
@@ -192,7 +227,16 @@ canvas.addEventListener('touchstart', (e) => {
         dragOffset.x = x - targetPiece.x;
         dragOffset.y = y - targetPiece.y;
     } else {
-        const piece = new Block(Date.now(), x, y);
+        let piece;
+        if (selectedType === 'ramp') {
+            piece = new Ramp(Date.now(), x, y, selectedDirection);
+        } else if (selectedType === 'fan') {
+            piece = new Fan(Date.now(), x, y, 1);
+        } else if (selectedType === 'spring') {
+            piece = new Spring(Date.now(), x, y, 8);
+        } else {
+            piece = new Block(Date.now(), x, y);
+        }
         piece.owner = myEmoji;
         pieces.push(piece);
         socket.send(JSON.stringify({ type: 'addPiece', piece }));

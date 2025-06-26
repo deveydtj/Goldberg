@@ -73,6 +73,33 @@ header {
     pointer-events: auto;
 }
 
+#palette {
+    position: absolute;
+    top: 60px;
+    right: 140px;
+    background: rgba(0,0,0,0.5);
+    padding: 8px;
+    border-radius: 4px;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.palette-item {
+    background: rgba(255,255,255,0.1);
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#rotateBtn {
+    margin-top: 4px;
+    cursor: pointer;
+}
+
 #resetLevelBtn {
     margin-left: 8px;
 }
