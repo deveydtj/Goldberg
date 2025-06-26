@@ -33,7 +33,7 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
   - ~~generator never overlaps pieces closer than `minDistancePx`.~~ Added `generator.test.js`.
   - ~~solver always confirms a generated level is solvable.~~ Added `solver.test.js`.
  - ~~Piece-palette UI dock with rotate handles for mouse and touch.~~ Implemented rotate handles and hover detection for ramp pieces.
-- Show piece counters and a scoring HUD.
+ - ~~Show piece counters and a scoring HUD.~~ Implemented score HUD with piece counters.
 - Implement Run/Edit phase state machine with ghost replays of failed runs.
  - ~~Static wall obstacle piece.~~ Implemented in codebase.
  - One-way gate and Magnet with new force calculations.

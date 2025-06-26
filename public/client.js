@@ -11,6 +11,8 @@ const ctx = canvas.getContext('2d');
 const chatLog = document.getElementById('chatLog');
 const chatInput = document.getElementById('chatInput');
 const leaderboardEl = document.getElementById('leaderboard');
+const pieceCountersEl = document.getElementById('pieceCounters');
+const scoreValueEl = document.getElementById('scoreValue');
 const resetLevelBtn = document.getElementById('resetLevelBtn');
 const emojiInput = document.getElementById('emojiInput');
 const emojiBtn = document.getElementById('emojiBtn');
@@ -30,6 +32,8 @@ chatInput.addEventListener('keydown', (e) => {
 if (resetLevelBtn) {
     resetLevelBtn.addEventListener('click', () => {
         socket.send(JSON.stringify({ type: 'resetLevel' }));
+        resets++;
+        updateHud();
     });
 }
 
@@ -71,9 +75,12 @@ let target = null;
 let ball = null;
 let selectedType = 'block';
 let selectedDirection = 'right';
+let puzzleStartTime = Date.now();
+let resets = 0;
 const HANDLE_RADIUS = 6;
 let hover = { x: 0, y: 0 };
 let hoveredPiece = null;
+updateHud();
 
 function pieceAt(x, y) {
     return pieces.find(p => {
@@ -104,9 +111,25 @@ function handleForPoint(x, y) {
     return Math.sqrt(dx * dx + dy * dy) <= HANDLE_RADIUS ? p : null;
 }
 
+function updateHud() {
+    if (!pieceCountersEl || !scoreValueEl) return;
+    const counts = { block: 0, wall: 0, ramp: 0, fan: 0, spring: 0 };
+    pieces.forEach(p => {
+        if (counts[p.type] !== undefined) counts[p.type]++;
+    });
+    pieceCountersEl.innerHTML = Object.entries(counts)
+        .map(([t, c]) => `${t}: ${c}`)
+        .join('<br>');
+    const elapsedMinutes = (Date.now() - puzzleStartTime) / 60000;
+    const base = 100;
+    const score = Math.max(0, Math.round(base - pieces.length - resets * 5 - elapsedMinutes * 2));
+    scoreValueEl.textContent = score;
+}
+
 socket.addEventListener('open', () => {
     console.log('Connected to server');
     startBackgroundMusic();
+    setInterval(updateHud, 1000);
 });
 
 socket.addEventListener('message', event => {
@@ -117,6 +140,9 @@ socket.addEventListener('message', event => {
             pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
             ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
+            puzzleStartTime = Date.now();
+            resets = 0;
+            updateHud();
             if (msg.leaderboard) {
                 leaderboardEl.innerHTML = Object.entries(msg.leaderboard)
                     .sort((a,b) => b[1] - a[1])
@@ -140,6 +166,7 @@ socket.addEventListener('message', event => {
         case 'addPiece':
             pieces.push(msg.piece);
             playBeep();
+            updateHud();
             break;
         case 'movePiece': {
             const p = pieces.find(p => p.id === msg.id);
@@ -154,6 +181,7 @@ socket.addEventListener('message', event => {
         case 'removePiece':
             pieces = pieces.filter(p => p.id !== msg.id);
             playBeep(330);
+            updateHud();
             break;
         case 'ballUpdate':
             if (ball && msg.ball.id === ball.id) {
@@ -167,6 +195,9 @@ socket.addEventListener('message', event => {
             pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
             ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
             target = msg.target;
+            resets = 0;
+            puzzleStartTime = Date.now();
+            updateHud();
             break;
         case 'puzzleComplete':
             console.log(`Puzzle solved by ${msg.emoji}`);
@@ -234,6 +265,7 @@ canvas.addEventListener('mousedown', (e) => {
         pieces.push(piece);
         socket.send(JSON.stringify({ type: 'addPiece', piece }));
         playBeep();
+        updateHud();
     }
 });
 
@@ -290,6 +322,7 @@ canvas.addEventListener('touchstart', (e) => {
         pieces.push(piece);
         socket.send(JSON.stringify({ type: 'addPiece', piece }));
         playBeep();
+        updateHud();
     }
 });
 
@@ -321,6 +354,7 @@ canvas.addEventListener('contextmenu', (e) => {
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
     playBeep();
+    updateHud();
 });
 
 canvas.addEventListener('auxclick', (e) => {
@@ -331,6 +365,7 @@ canvas.addEventListener('auxclick', (e) => {
     pieces.push(piece);
     socket.send(JSON.stringify({ type: 'addPiece', piece }));
     playBeep();
+    updateHud();
 });
 
 canvas.addEventListener('dblclick', (e) => {
@@ -340,6 +375,7 @@ canvas.addEventListener('dblclick', (e) => {
         pieces = pieces.filter(q => q.id !== p.id);
         socket.send(JSON.stringify({ type: 'removePiece', id: p.id }));
         playBeep(330);
+        updateHud();
     }
 });
 
@@ -347,6 +383,8 @@ canvas.addEventListener('dblclick', (e) => {
 window.addEventListener('keydown', (e) => {
     if (e.key === 'r') {
         socket.send(JSON.stringify({ type: 'resetPuzzle' }));
+        resets++;
+        updateHud();
     }
 });
 
