@@ -10,7 +10,7 @@
     <header>
         <h1>Emoji Goldberg Puzzle</h1>
     </header>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="800" height="600" tabindex="0"></canvas>
     <div id="ui">
         <div id="emojiPicker">
             <input id="emojiInput" type="text" placeholder="Emoji" maxlength="2" />
@@ -24,15 +24,22 @@
         <div id="chatLog"></div>
         <input id="chatInput" type="text" placeholder="Type a message" />
         <div id="palette">
-            <div class="palette-item" data-type="block">Block</div>
-            <div class="palette-item" data-type="wall">Wall</div>
-            <div id="rampItem" class="palette-item" data-type="ramp" data-direction="right">Ramp ▶</div>
-            <button id="rotateBtn">↺ Rotate</button>
-            <div class="palette-item" data-type="fan">Fan</div>
-            <div class="palette-item" data-type="spring">Spring</div>
+            <div class="palette-item" data-type="block" tabindex="0">Block</div>
+            <div class="palette-item" data-type="wall" tabindex="0">Wall</div>
+            <div id="rampItem" class="palette-item" data-type="ramp" data-direction="right" tabindex="0">Ramp ▶</div>
+            <button id="rotateBtn" tabindex="0">↺ Rotate</button>
+            <div class="palette-item" data-type="fan" tabindex="0">Fan</div>
+            <div class="palette-item" data-type="spring" tabindex="0">Spring</div>
         </div>
         <div id="controls">Click to add a block. Press 'r' for a new puzzle.
             <button id="resetLevelBtn">Reset Level</button>
+        </div>
+    </div>
+    <div id="tutorial" class="modal">
+        <div class="tutorial-content">
+            <h2>Welcome!</h2>
+            <p>Use <strong>R/F</strong> to rotate ramps, <strong>Delete</strong> to remove a piece and <strong>Space</strong> to start or stop a test run.</p>
+            <button id="skipTutorialBtn">Start Playing</button>
         </div>
     </div>
     <script type="module" src="client.js"></script>
