@@ -26,7 +26,7 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
 - ~~Responsive layout and touch controls.~~ Canvas now resizes and supports taps.
 
 ## Next work items
-- Rewrite generator using a three-phase algorithm starting from `levelGenerator.js`.
+- ~~Rewrite generator using a three-phase algorithm starting from `levelGenerator.js`.~~ Implemented phased generator with golden path, Poisson disk fill and barriers.
  - ~~Add Poisson-disk spacing utility (`minDistancePx`).~~ Implemented in `server/levelGenerator.js`.
 - ~~Create a headless solver worker returning `solutionPath` and `difficultyScore`; cache by seed.~~ Implemented in `server/solver.js`.
 - Unit tests:
@@ -39,6 +39,6 @@ r.~~ Added tests for WebSocket welcome and UI toggling.
  - One-way gate and Magnet with new force calculations.
 - Keyboard shortcuts with focus ring and a skip-able tutorial.
 - Settings modal for audio slider and color-blind palette toggle.
-- Broadcast only the seed so clients regenerate levels and persist per-emoji scores and fastest solves.
+- ~~Broadcast only the seed so clients regenerate levels and persist per-emoji scores and fastest solves.~~ Implemented deterministic level regeneration.
 - Add victory confetti tweens, mobile haptics on goal collision and overall ghost replay polish.
 - CI must lint, run tests and solve a level in under 500 ms, plus a smoke test verifying multiplayer sync.

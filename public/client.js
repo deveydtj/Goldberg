@@ -1,6 +1,7 @@
 import { Block, Ramp, Ball, Fan, Spring, Wall, pieceAlpha, setupResponsiveCanvas } from './ui.js';
 import { updateBall } from './physics.js';
 import { playBeep, startBackgroundMusic } from './sound.js';
+import { generatePuzzle } from './levelGenerator.js';
 
 // WebSocket connection to the server
 const socket = new WebSocket(`ws://${location.host}`);
@@ -137,9 +138,16 @@ socket.addEventListener('message', event => {
     switch (msg.type) {
         case 'welcome':
             myEmoji = msg.emoji;
-            pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
-            ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
-            target = msg.target;
+            if (msg.seed) {
+                const puzzle = generatePuzzle(msg.difficulty, msg.seed);
+                pieces = puzzle.pieces.filter(p => p.type !== 'ball');
+                ball = puzzle.pieces.find(p => p.type === 'ball') || null;
+                target = puzzle.target;
+            } else {
+                pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
+                ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
+                target = msg.target;
+            }
             puzzleStartTime = Date.now();
             resets = 0;
             updateHud();
@@ -192,9 +200,16 @@ socket.addEventListener('message', event => {
             pieces = [];
             ball = null;
             target = null;
-            pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
-            ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
-            target = msg.target;
+            if (msg.seed) {
+                const puzzle = generatePuzzle(msg.difficulty, msg.seed);
+                pieces = puzzle.pieces.filter(p => p.type !== 'ball');
+                ball = puzzle.pieces.find(p => p.type === 'ball') || null;
+                target = puzzle.target;
+            } else {
+                pieces = (msg.pieces || []).filter(p => p.type !== 'ball');
+                ball = (msg.pieces || []).find(p => p.type === 'ball') || null;
+                target = msg.target;
+            }
             resets = 0;
             puzzleStartTime = Date.now();
             updateHud();
