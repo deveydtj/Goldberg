@@ -37,6 +37,18 @@ header {
     pointer-events: auto;
 }
 
+#scoreHud {
+    position: absolute;
+    bottom: 20px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    pointer-events: auto;
+    min-width: 120px;
+}
+
 #chatLog {
     position: absolute;
     bottom: 60px;
