@@ -4,6 +4,7 @@ const { WebSocketServer } = require('ws');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { generatePuzzle } = require('./levelGenerator');
 
 const app = express();
 const httpServer = createServer(app);
@@ -37,58 +38,6 @@ if (!puzzleState) {
   saveDB(db);
 }
 let initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-
-function generatePuzzle(difficulty = 1) {
-  const pieces = [];
-  pieces.push({
-    id: crypto.randomUUID(),
-    type: 'ball',
-    x: 50,
-    y: 50,
-    vx: 0,
-    vy: 0,
-    radius: 8,
-    spawnTime: Date.now()
-  });
-  const blockCount = 5 + Math.max(0, difficulty - 1);
-  for (let i = 0; i < blockCount; i++) {
-    pieces.push({
-      id: crypto.randomUUID(),
-      type: 'block',
-      x: Math.random() * 760 + 20,
-      y: Math.random() * 560 + 20,
-      static: true,
-      spawnTime: Date.now()
-    });
-  }
-  const rampCount = Math.max(1, Math.floor(difficulty / 2));
-  for (let i = 0; i < rampCount; i++) {
-    pieces.push({
-      id: crypto.randomUUID(),
-      type: 'ramp',
-      x: Math.random() * 760 + 20,
-      y: Math.random() * 560 + 20,
-      direction: Math.random() < 0.5 ? 'left' : 'right',
-      spawnTime: Date.now()
-    });
-  }
-  const fanCount = Math.max(0, Math.floor(difficulty / 3));
-  for (let i = 0; i < fanCount; i++) {
-    pieces.push({
-      id: crypto.randomUUID(),
-      type: 'fan',
-      x: Math.random() * 760 + 20,
-      y: Math.random() * 560 + 20,
-      power: 1,
-      spawnTime: Date.now()
-    });
-  }
-  const target = {
-    x: Math.random() * 760 + 20,
-    y: Math.random() * 560 + 20
-  };
-  return { pieces, target };
-}
 
 function checkPuzzleComplete(piece) {
   const dx = piece.x - puzzleState.target.x;
