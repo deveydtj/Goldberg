@@ -6,6 +6,9 @@ import { setTimeout as delay } from 'timers/promises';
 import { join, dirname } from 'path';
 import { unlinkSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 const PORT = 4010;
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -134,7 +137,9 @@ test('resetLevel restores original puzzle state', async () => {
   await delay(500);
   const ws = new WebSocket(`ws://localhost:${PORT}`);
   const welcome = await new Promise(resolve => ws.once('message', data => resolve(JSON.parse(data))));
-  const originalIds = welcome.pieces.map(p => p.id).sort();
+  const { generatePuzzle } = require('../server/levelGenerator.js');
+  const puzzle = generatePuzzle(welcome.difficulty, welcome.seed);
+  const originalIds = puzzle.pieces.map(p => p.id).sort();
 
   // modify puzzle by adding a piece
   const piece = { id: 'temp', type: 'block', x: 10, y: 10 };
@@ -152,7 +157,8 @@ test('resetLevel restores original puzzle state', async () => {
     });
   });
 
-  const ids = (msg.pieces || []).map(p => p.id).sort();
+  const puzzle2 = generatePuzzle(msg.difficulty, msg.seed);
+  const ids = puzzle2.pieces.map(p => p.id).sort();
   assert.deepEqual(ids, originalIds);
   ws.terminate();
   server.kill();

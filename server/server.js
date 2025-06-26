@@ -89,8 +89,8 @@ wss.on('connection', (ws, req) => {
   ws.send(JSON.stringify({
     type: 'welcome',
     emoji,
-    pieces: puzzleState.pieces,
-    target: puzzleState.target,
+    seed: puzzleState.seed,
+    difficulty: puzzleState.difficulty,
     leaderboard: db.progress || {}
   }));
 
@@ -125,7 +125,7 @@ wss.on('connection', (ws, req) => {
         });
         initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
         broadcastLeaderboard();
-        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+        broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
@@ -150,7 +150,7 @@ wss.on('connection', (ws, req) => {
         });
         initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
         broadcastLeaderboard();
-        broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+        broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
@@ -205,12 +205,12 @@ wss.on('connection', (ws, req) => {
         saveDB(db);
       });
       initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
     } else if (data.type === 'resetLevel') {
       // restore puzzle to its original state without changing difficulty
       puzzleState = db.puzzleState = JSON.parse(JSON.stringify(initialPuzzleState));
       saveDB(db);
-      broadcast({ type: 'newPuzzle', pieces: puzzleState.pieces, target: puzzleState.target });
+      broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
     }
   });
 

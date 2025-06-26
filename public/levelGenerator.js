@@ -1,4 +1,11 @@
-const crypto = require('crypto');
+// Shared level generator for both server and client
+// Uses the same algorithm as server/levelGenerator.js
+
+const WIDTH = 800;
+const HEIGHT = 600;
+const MARGIN = 20;
+const MAX_ATTEMPTS = 30;
+export const minDistancePx = 40;
 
 function createRNG(seed) {
   let h = 0;
@@ -14,37 +21,32 @@ function createRNG(seed) {
   };
 }
 
-const WIDTH = 800;
-const HEIGHT = 600;
-const MARGIN = 20;
-const MAX_ATTEMPTS = 30;
-// Minimum distance between any two pieces when generating levels
-const minDistancePx = 40;
-
-function randomPosition(existing=[], rng=Math.random) {
-  for (let a=0; a<MAX_ATTEMPTS; a++) {
-    const x = rng() * (WIDTH - MARGIN*2) + MARGIN;
-    const y = rng() * (HEIGHT - MARGIN*2) + MARGIN;
+function randomPosition(existing = [], rng = Math.random) {
+  for (let a = 0; a < MAX_ATTEMPTS; a++) {
+    const x = rng() * (WIDTH - MARGIN * 2) + MARGIN;
+    const y = rng() * (HEIGHT - MARGIN * 2) + MARGIN;
     let ok = true;
     for (const p of existing) {
-      const dx = p.x - x;
-      const dy = p.y - y;
-      if (Math.hypot(dx, dy) < minDistancePx) { ok = false; break; }
+      if (Math.hypot(p.x - x, p.y - y) < minDistancePx) {
+        ok = false;
+        break;
+      }
     }
     if (ok) return { x, y };
   }
-  // fallback if space exhausted
-  return { x: rng() * (WIDTH - MARGIN*2) + MARGIN,
-           y: rng() * (HEIGHT - MARGIN*2) + MARGIN };
+  return {
+    x: rng() * (WIDTH - MARGIN * 2) + MARGIN,
+    y: rng() * (HEIGHT - MARGIN * 2) + MARGIN,
+  };
 }
 
-function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
+export function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
   const rng = createRNG(seed);
   let counter = 0;
   const nextId = () => `${seed}-${counter++}`;
   const pieces = [];
 
-  // Phase 1 - golden path: place ball, target and a simple path of blocks
+  // Phase 1 - golden path
   const ball = {
     id: nextId(),
     type: 'ball',
@@ -80,7 +82,7 @@ function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
     existing.push(pos);
   }
 
-  // Phase 2 - Poisson disk: random interactive pieces
+  // Phase 2 - additional random pieces
   const extraCount = difficulty + 2;
   const types = ['block', 'ramp', 'fan', 'spring', 'wall'];
   for (let i = 0; i < extraCount; i++) {
@@ -126,5 +128,3 @@ function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
 
   return { seed, difficulty, pieces, target };
 }
-
-module.exports = { generatePuzzle, minDistancePx };
