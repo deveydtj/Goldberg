@@ -9,15 +9,16 @@ test('side view remains enabled', () => {
   assert.equal(sideView, true);
 });
 
-test('setupResponsiveCanvas adjusts size', () => {
-  const canvas = {};
+test('setupResponsiveCanvas applies scaling', () => {
+  const canvas = { style: {} };
   global.window = {
     innerWidth: 500,
     innerHeight: 400,
     addEventListener: (_, fn) => fn()
   };
-  setupResponsiveCanvas(canvas);
-  assert.equal(canvas.width, 500);
-  assert.equal(canvas.height, 400);
+  setupResponsiveCanvas(canvas, 800, 600);
+  assert.equal(canvas.width, 800);
+  assert.equal(canvas.height, 600);
+  assert.ok(canvas.style.transform.startsWith('scale('));
   delete global.window;
 });
