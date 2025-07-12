@@ -13,10 +13,16 @@ export function pieceAlpha(piece, duration = 300) {
     return Math.min(age / duration, 1);
 }
 
-export function setupResponsiveCanvas(canvas) {
+export function setupResponsiveCanvas(canvas, baseWidth = 800, baseHeight = 600) {
+    if (!canvas.style) canvas.style = {};
     function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const scaleX = window.innerWidth / baseWidth;
+        const scaleY = window.innerHeight / baseHeight;
+        const scale = Math.min(scaleX, scaleY);
+        canvas.width = baseWidth;
+        canvas.height = baseHeight;
+        canvas.style.transformOrigin = 'top left';
+        canvas.style.transform = `scale(${scale})`;
     }
     resize();
     window.addEventListener('resize', resize);
