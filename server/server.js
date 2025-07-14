@@ -1,11 +1,15 @@
-const express = require('express');
-const { createServer } = require('http');
-const { WebSocketServer } = require('ws');
-const path = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
-const { generatePuzzle } = require('./levelGenerator');
-const { solvePuzzle } = require('./solver');
+import express from 'express';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+import { generatePuzzle } from './levelGenerator.js';
+import { solvePuzzle } from './solver.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);

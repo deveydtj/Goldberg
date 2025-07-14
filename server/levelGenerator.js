@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 function createRNG(seed) {
   let h = 0;
@@ -127,4 +127,4 @@ function generatePuzzle(difficulty = 1, seed = crypto.randomUUID()) {
   return { seed, difficulty, pieces, target };
 }
 
-module.exports = { generatePuzzle, minDistancePx };
+export { generatePuzzle, minDistancePx };
