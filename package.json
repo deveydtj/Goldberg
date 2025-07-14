@@ -2,6 +2,7 @@
   "name": "emoji-goldberg-puzzle",
   "version": "0.1.0",
   "description": "Multiplayer collaborative Rube Goldberg puzzle",
+  "type": "module",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",

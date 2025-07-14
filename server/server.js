@@ -1,11 +1,15 @@
-const express = require('express');
-const { createServer } = require('http');
-const { WebSocketServer } = require('ws');
-const path = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
-const { generatePuzzle } = require('./levelGenerator');
-const { solvePuzzle } = require('./solver');
+import express from 'express';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+import { generatePuzzle } from './levelGenerator.js';
+import { solvePuzzle } from './solver.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
@@ -33,17 +37,34 @@ function saveDB(db) {
 
 let db = loadDB();
 let puzzleState = db.puzzleState;
-if (!puzzleState) {
-  puzzleState = generatePuzzle(db.difficulty);
-  db.puzzleState = puzzleState;
-  saveDB(db);
+
+// Initialize puzzle state and solve it
+async function initializePuzzleState() {
+  if (!puzzleState) {
+    puzzleState = generatePuzzle(db.difficulty);
+    db.puzzleState = puzzleState;
+    saveDB(db);
+  }
+
+  // Wait for puzzle solution before proceeding
+  try {
+    const solutionResult = await solvePuzzle(puzzleState);
+    puzzleState.solutionPath = solutionResult.solutionPath;
+    puzzleState.difficultyScore = solutionResult.difficultyScore;
+    db.puzzleState = puzzleState;
+    saveDB(db);
+  } catch (err) {
+    console.error('Failed to solve initial puzzle:', err);
+  }
 }
-solvePuzzle(puzzleState).then(res => {
-  puzzleState.solutionPath = res.solutionPath;
-  puzzleState.difficultyScore = res.difficultyScore;
-  db.puzzleState = puzzleState;
-  saveDB(db);
+
+// Initialize puzzle state and continue setup
+initializePuzzleState().then(() => {
+  console.log('Puzzle state initialized');
+}).catch(err => {
+  console.error('Failed to initialize puzzle state:', err);
 });
+
 let initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
 
 function checkPuzzleComplete(piece) {
@@ -97,7 +118,7 @@ wss.on('connection', (ws, req) => {
   // Notify others a player joined
   broadcast({ type: 'playerJoined', emoji });
 
-  ws.on('message', (message) => {
+  ws.on('message', async (message) => {
     let data;
     try {
       data = JSON.parse(message);
@@ -117,15 +138,20 @@ wss.on('connection', (ws, req) => {
         db.progress = db.progress || {};
         db.progress[ip] = (db.progress[ip] || 0) + 1;
         puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
-        solvePuzzle(puzzleState).then(res => {
-          puzzleState.solutionPath = res.solutionPath;
-          puzzleState.difficultyScore = res.difficultyScore;
+        
+        // Wait for puzzle solution before proceeding
+        try {
+          const solutionResult = await solvePuzzle(puzzleState);
+          puzzleState.solutionPath = solutionResult.solutionPath;
+          puzzleState.difficultyScore = solutionResult.difficultyScore;
           db.puzzleState = puzzleState;
           saveDB(db);
-        });
-        initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-        broadcastLeaderboard();
-        broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
+          initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
+          broadcastLeaderboard();
+          broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
+        } catch (err) {
+          console.error('Failed to solve puzzle after completion:', err);
+        }
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
@@ -142,15 +168,20 @@ wss.on('connection', (ws, req) => {
         db.progress = db.progress || {};
         db.progress[ip] = (db.progress[ip] || 0) + 1;
         puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
-        solvePuzzle(puzzleState).then(res => {
-          puzzleState.solutionPath = res.solutionPath;
-          puzzleState.difficultyScore = res.difficultyScore;
+        
+        // Wait for puzzle solution before proceeding
+        try {
+          const solutionResult = await solvePuzzle(puzzleState);
+          puzzleState.solutionPath = solutionResult.solutionPath;
+          puzzleState.difficultyScore = solutionResult.difficultyScore;
           db.puzzleState = puzzleState;
           saveDB(db);
-        });
-        initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-        broadcastLeaderboard();
-        broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
+          initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
+          broadcastLeaderboard();
+          broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
+        } catch (err) {
+          console.error('Failed to solve puzzle after ball update completion:', err);
+        }
       } else {
         db.puzzleState = puzzleState;
         saveDB(db);
@@ -198,14 +229,19 @@ wss.on('connection', (ws, req) => {
     } else if (data.type === 'resetPuzzle') {
       // regenerate puzzle at current difficulty
       puzzleState = db.puzzleState = generatePuzzle(db.difficulty);
-      solvePuzzle(puzzleState).then(res => {
-        puzzleState.solutionPath = res.solutionPath;
-        puzzleState.difficultyScore = res.difficultyScore;
+      
+      // Wait for puzzle solution before proceeding
+      try {
+        const solutionResult = await solvePuzzle(puzzleState);
+        puzzleState.solutionPath = solutionResult.solutionPath;
+        puzzleState.difficultyScore = solutionResult.difficultyScore;
         db.puzzleState = puzzleState;
         saveDB(db);
-      });
-      initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
-      broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
+        initialPuzzleState = JSON.parse(JSON.stringify(puzzleState));
+        broadcast({ type: 'newPuzzle', seed: puzzleState.seed, difficulty: puzzleState.difficulty });
+      } catch (err) {
+        console.error('Failed to solve puzzle after reset:', err);
+      }
     } else if (data.type === 'resetLevel') {
       // restore puzzle to its original state without changing difficulty
       puzzleState = db.puzzleState = JSON.parse(JSON.stringify(initialPuzzleState));

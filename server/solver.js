@@ -1,4 +1,7 @@
-const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
+import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 // Simple in-memory cache indexed by puzzle seed
 const solverCache = new Map();
@@ -16,9 +19,11 @@ if (!isMainThread) {
   const path = ball ? [ { x: ball.x, y: ball.y }, { x: puzzle.target.x, y: puzzle.target.y } ] : [];
   const difficultyScore = Math.min(100, Math.round(distance(path[0], path[1]) / 10 + puzzle.pieces.length));
   parentPort.postMessage({ solutionPath: path, difficultyScore });
-} else {
-  // main thread API
-  function solvePuzzle(puzzle) {
+}
+
+// main thread API
+function solvePuzzle(puzzle) {
+  if (isMainThread) {
     if (solverCache.has(puzzle.seed)) {
       return Promise.resolve(solverCache.get(puzzle.seed));
     }
@@ -35,6 +40,6 @@ if (!isMainThread) {
       });
     });
   }
-
-  module.exports = { solvePuzzle, solverCache };
 }
+
+export { solvePuzzle, solverCache };
