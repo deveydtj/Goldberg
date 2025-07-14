@@ -84,12 +84,13 @@ header {
     padding: 8px;
     border-radius: 4px;
     pointer-events: auto;
+    max-width: 200px;
 }
 
 #palette {
     position: absolute;
     top: 60px;
-    right: 140px;
+    right: 230px;
     background: rgba(0,0,0,0.5);
     padding: 8px;
     border-radius: 4px;
@@ -123,9 +124,12 @@ header {
     top: 10px;
     right: 10px;
     background: rgba(0,0,0,0.5);
-    padding: 4px;
+    padding: 6px;
     border-radius: 4px;
     pointer-events: auto;
+    display: flex;
+    gap: 4px;
+    align-items: center;
 }
 
 #emojiPicker input {
@@ -172,4 +176,45 @@ input:focus {
     padding: 20px;
     border-radius: 8px;
     text-align: center;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 1024px) {
+    #palette {
+        right: 10px;
+        top: 200px;
+    }
+    
+    #controls {
+        right: 10px;
+        top: 120px;
+        max-width: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    #palette {
+        right: 10px;
+        top: 220px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-width: 200px;
+    }
+    
+    #controls {
+        right: 10px;
+        top: 140px;
+        max-width: 160px;
+        font-size: 12px;
+    }
+    
+    #leaderboard {
+        top: 80px;
+        font-size: 12px;
+    }
+    
+    #scoreHud {
+        font-size: 12px;
+        min-width: 100px;
+    }
 }
