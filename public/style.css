@@ -4,18 +4,24 @@ body {
     background: linear-gradient(#222, #444);
     color: #eee;
     font-family: "Segoe UI", Tahoma, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 canvas {
     display: block;
     background: #111;
     outline: none;
+    margin: 0 auto;
 }
 
 header {
     padding: 8px 16px;
     background: rgba(0,0,0,0.6);
     text-align: center;
+    flex-shrink: 0;
+    z-index: 10;
 }
 
 #ui {
@@ -25,6 +31,8 @@ header {
     right: 0;
     bottom: 0;
     pointer-events: none;
+    display: flex;
+    flex-direction: column;
 }
 
 #leaderboard {
@@ -39,15 +47,14 @@ header {
 }
 
 #scoreHud {
-    position: absolute;
-    bottom: 20px;
-    right: 10px;
-    background: rgba(0,0,0,0.5);
-    padding: 8px;
-    border-radius: 4px;
+    position: static;
+    background: rgba(0,0,0,0.7);
+    padding: 12px;
+    border-radius: 6px;
     font-size: 14px;
     pointer-events: auto;
-    min-width: 120px;
+    min-width: 180px;
+    order: 1;
 }
 
 #chatLog {
@@ -76,29 +83,27 @@ header {
 }
 
 #controls {
-    position: absolute;
-    top: 60px;
-    right: 10px;
+    position: static;
     font-size: 14px;
-    background: rgba(0,0,0,0.5);
-    padding: 8px;
-    border-radius: 4px;
+    background: rgba(0,0,0,0.7);
+    padding: 12px;
+    border-radius: 6px;
     pointer-events: auto;
     max-width: 200px;
+    order: 3;
 }
 
 #palette {
-    position: absolute;
-    top: 60px;
-    right: 230px;
-    background: rgba(0,0,0,0.5);
-    padding: 8px;
-    border-radius: 4px;
+    position: static;
+    background: rgba(0,0,0,0.7);
+    padding: 12px;
+    border-radius: 6px;
     pointer-events: auto;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     font-size: 14px;
+    order: 2;
 }
 
 .palette-item {
@@ -119,22 +124,50 @@ header {
     margin-left: 8px;
 }
 
+/* Right sidebar for game controls */
+.right-sidebar {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: 220px;
+}
+
 #emojiPicker {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.5);
-    padding: 6px;
-    border-radius: 4px;
+    background: rgba(0,0,0,0.7);
+    padding: 8px;
+    border-radius: 6px;
     pointer-events: auto;
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
+    z-index: 5;
 }
 
 #emojiPicker input {
     width: 40px;
     text-align: center;
+    padding: 4px;
+    border: none;
+    border-radius: 4px;
+}
+
+/* Right sidebar for game controls */
+.right-sidebar {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    max-width: 220px;
 }
 
 /* Focus ring for keyboard navigation */
@@ -180,41 +213,70 @@ input:focus {
 
 /* Responsive design for smaller screens */
 @media (max-width: 1024px) {
-    #palette {
+    .right-sidebar {
         right: 10px;
-        top: 200px;
+        max-width: 200px;
+        gap: 10px;
     }
     
-    #controls {
-        right: 10px;
-        top: 120px;
+    #scoreHud, #palette, #controls {
+        min-width: unset;
         max-width: 180px;
     }
 }
 
 @media (max-width: 768px) {
-    #palette {
-        right: 10px;
-        top: 220px;
-        flex-direction: row;
-        flex-wrap: wrap;
-        max-width: 200px;
+    .right-sidebar {
+        position: fixed;
+        top: 50px;
+        right: 5px;
+        bottom: 5px;
+        max-width: 160px;
+        gap: 8px;
+        overflow-y: auto;
+        z-index: 10;
     }
     
-    #controls {
-        right: 10px;
-        top: 140px;
-        max-width: 160px;
+    #palette {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .palette-item {
+        flex: 1;
+        min-width: 60px;
         font-size: 12px;
+        padding: 3px 4px;
+    }
+    
+    #controls, #scoreHud {
+        font-size: 12px;
+        padding: 8px;
+        max-width: 150px;
     }
     
     #leaderboard {
         top: 80px;
         font-size: 12px;
+        max-width: 150px;
     }
     
-    #scoreHud {
+    #chatLog {
+        width: 200px;
+        height: 100px;
         font-size: 12px;
-        min-width: 100px;
+    }
+    
+    #chatInput {
+        width: 200px;
+        font-size: 12px;
+    }
+    
+    #emojiPicker {
+        top: 5px;
+        right: 5px;
+        padding: 6px;
+        font-size: 12px;
     }
 }

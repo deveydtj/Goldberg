@@ -16,25 +16,27 @@
             <input id="emojiInput" type="text" placeholder="Emoji" maxlength="2" />
             <button id="emojiBtn">Set Emoji</button>
         </div>
-        <div id="leaderboard"></div>
-        <div id="scoreHud">
-            Score: <span id="scoreValue">100</span><br>
-            <div id="pieceCounters"></div>
+        <div class="right-sidebar">
+            <div id="scoreHud">
+                Score: <span id="scoreValue">100</span><br>
+                <div id="pieceCounters"></div>
+            </div>
+            <div id="palette">
+                <div class="palette-item" data-type="block" tabindex="0">Block</div>
+                <div class="palette-item" data-type="wall" tabindex="0">Wall</div>
+                <div id="rampItem" class="palette-item" data-type="ramp" data-direction="right" tabindex="0">Ramp ▶</div>
+                <button id="rotateBtn" tabindex="0">↺ Rotate</button>
+                <div class="palette-item" data-type="fan" tabindex="0">Fan</div>
+                <div class="palette-item" data-type="spring" tabindex="0">Spring</div>
+            </div>
+            <div id="controls">Click to add a block. Press 'r' for a new puzzle.
+                <button id="resetLevelBtn">Reset Level</button>
+                <button id="settingsBtn">Settings</button>
+            </div>
         </div>
+        <div id="leaderboard"></div>
         <div id="chatLog"></div>
         <input id="chatInput" type="text" placeholder="Type a message" />
-        <div id="palette">
-            <div class="palette-item" data-type="block" tabindex="0">Block</div>
-            <div class="palette-item" data-type="wall" tabindex="0">Wall</div>
-            <div id="rampItem" class="palette-item" data-type="ramp" data-direction="right" tabindex="0">Ramp ▶</div>
-            <button id="rotateBtn" tabindex="0">↺ Rotate</button>
-            <div class="palette-item" data-type="fan" tabindex="0">Fan</div>
-            <div class="palette-item" data-type="spring" tabindex="0">Spring</div>
-        </div>
-        <div id="controls">Click to add a block. Press 'r' for a new puzzle.
-            <button id="resetLevelBtn">Reset Level</button>
-            <button id="settingsBtn">Settings</button>
-        </div>
     </div>
     <div id="tutorial" class="modal">
         <div class="tutorial-content">
